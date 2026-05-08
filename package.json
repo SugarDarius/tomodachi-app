@@ -1,0 +1,53 @@
+{
+  "name": "tomodachi",
+  "private": true,
+  "version": "1.0.0-alpha.1",
+  "packageManager": "pnpm@10.33.2",
+  "engines": {
+    "node": ">=24.x"
+  },
+  "scripts": {
+    "dev": "next dev --experimental-https -p 3003",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint .",
+    "db:generate": "drizzle-kit generate --config drizzle.config.ts",
+    "db:migrate": "drizzle-kit migrate --config drizzle.config.ts"
+  },
+  "dependencies": {
+    "@neondatabase/auth": "0.3.0-beta",
+    "@neondatabase/serverless": "^1.1.0",
+    "@sugardarius/anzen": "^2.3.1",
+    "@t3-oss/env-core": "^0.13.11",
+    "@tanstack/react-table": "^8.21.3",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "decoders": "^2.9.3",
+    "drizzle-orm": "^0.45.2",
+    "jotai": "^2.20.0",
+    "lucide-react": "^1.14.0",
+    "next": "16.2.5",
+    "next-themes": "^0.4.6",
+    "papaparse": "^5.5.3",
+    "radix-ui": "^1.4.3",
+    "react": "19.2.6",
+    "react-dom": "19.2.6",
+    "react-dropzone": "^15.0.0",
+    "shadcn": "^4.7.0",
+    "tailwind-merge": "^3.5.0",
+    "tw-animate-css": "^1.4.0",
+    "workflow": "^4.2.4"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4",
+    "@types/node": "^25.6.0",
+    "@types/papaparse": "^5.5.2",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "drizzle-kit": "^0.31.10",
+    "eslint": "^9",
+    "eslint-config-next": "16.2.5",
+    "tailwindcss": "^4",
+    "typescript": "^5"
+  }
+}

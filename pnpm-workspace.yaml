@@ -1,0 +1,7 @@
+ignoredBuiltDependencies:
+  - esbuild
+  - msw
+  - sharp
+  - unrs-resolver
+onlyBuiltDependencies:
+  - core-js

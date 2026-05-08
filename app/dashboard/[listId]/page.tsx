@@ -1,0 +1,79 @@
+import Link from 'next/link'
+import { Suspense } from 'react'
+import { HomeIcon } from 'lucide-react'
+
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbSeparator,
+} from '~/components/ui/breadcrumb'
+
+import {
+  BreadcrumbItemName,
+  BreadcrumbItemNameSkeleton,
+} from './_components/breadcrumb-item-name'
+import { getContactsList, getContactsListMembers } from './_lib/contacts-list'
+import { HeadingSkeleton, Heading } from './_components/heading'
+import {
+  ContactsTable,
+  ContactsTableSkeleton,
+} from './_components/contacts-table'
+import { ImportContactsButton } from '~/components/contacts/import-contacts-button'
+
+export default async function Page({
+  params,
+}: {
+  params: Promise<{ listId: string }>
+}) {
+  const { listId } = await params
+
+  return (
+    <div className='flex flex-col gap-4 p-4 min-h-full'>
+      <div className='flex items-center justify-between flex-none'>
+        <Breadcrumb>
+          <BreadcrumbList>
+            <BreadcrumbItem>
+              <BreadcrumbLink asChild>
+                <Link href='/dashboard'>
+                  <HomeIcon className='size-4' />
+                </Link>
+              </BreadcrumbLink>
+            </BreadcrumbItem>
+            <BreadcrumbSeparator />
+            <BreadcrumbItem>
+              <BreadcrumbLink asChild>
+                <Link href='/dashboard'>Contacts lists</Link>
+              </BreadcrumbLink>
+            </BreadcrumbItem>
+            <BreadcrumbSeparator />
+            <BreadcrumbItem>
+              <Suspense fallback={<BreadcrumbItemNameSkeleton />}>
+                <BreadcrumbItemName
+                  getContactsListPromise={getContactsList({ id: listId })}
+                />
+              </Suspense>
+            </BreadcrumbItem>
+          </BreadcrumbList>
+        </Breadcrumb>
+        <ImportContactsButton listId={listId} />
+      </div>
+      <div className='flex flex-col gap-4 flex-none'>
+        <Suspense fallback={<HeadingSkeleton />}>
+          <Heading getContactsListPromise={getContactsList({ id: listId })} />
+        </Suspense>
+      </div>
+      <div className='flex flex-col gap-2 flex-1'>
+        <Suspense fallback={<ContactsTableSkeleton />}>
+          <ContactsTable
+            listId={listId}
+            getContactsListMembersPromise={getContactsListMembers({
+              id: listId,
+            })}
+          />
+        </Suspense>
+      </div>
+    </div>
+  )
+}
