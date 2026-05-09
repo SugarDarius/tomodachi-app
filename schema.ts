@@ -9,6 +9,8 @@ import {
   uniqueIndex,
   index,
   primaryKey,
+  pgEnum,
+  integer,
 } from 'drizzle-orm/pg-core'
 
 /**
@@ -56,6 +58,117 @@ export const contactsLists = pgTable(
 
 export type ContactsList = typeof contactsLists.$inferSelect
 export type CreateContactsList = typeof contactsLists.$inferInsert
+
+/**
+ * Enum for the ingestion status of a contact import.
+ */
+export const contactImportStatusEnum = pgEnum('contact_import_status', [
+  'running',
+  'completed',
+  'failed',
+])
+
+/**
+ * `contact_imports` table
+ * Represents one CSV file uploaded to a blob storage (Vercel Blob)
+ * and ingested in `contacts` and `contacts_list_members` tables.
+ */
+export const contactImports = pgTable(
+  'contact_imports',
+  {
+    /**
+     * The unique identifier for the contact import.
+     */
+    id: uuid('id').primaryKey().defaultRandom(),
+    /**
+     * Tenant ID representing which entity owns this contact import.
+     */
+    tenantId: text('tenant_id').notNull(),
+    /**
+     * The list ID that the contact import is associated with.
+     */
+    listId: uuid('list_id')
+      .notNull()
+      .references(() => contactsLists.id, { onDelete: 'cascade' }),
+    /**
+     * Blob storage URL for the CSV file.
+     */
+    blobUrl: text('blob_url').notNull(),
+    /**
+     * Original filename of the CSV file.
+     */
+    originalFilename: text('original_filename').notNull(),
+    /**
+     * Content type of the CSV file.
+     */
+    contentType: text('content_type').notNull(),
+    /**
+     * Mapping of CSV headers to the canonical and varying fields in the contacts table.
+     * @example
+     * {
+     *  "canonical": {
+     *    "email": "email",
+     *    "first_name": "firstName",
+     *    "last_name": "lastName",
+     *  },
+     *  "varying": ["company", "phone"]
+     * }
+     */
+    columnMap: jsonb('column_map').notNull().default({}),
+    /**
+     * Ingestion status of the contact import.
+     */
+    ingestionStatus: contactImportStatusEnum('ingestion_status')
+      .notNull()
+      .default('running'),
+    /**
+     * Number of csv rows inspected
+     */
+    numberOfInspectedRows: integer('number_of_inspected_rows')
+      .notNull()
+      .default(0),
+    /**
+     * Number of csv rows successfully ingested
+     */
+    numberOfIngestedRows: integer('number_of_ingested_rows')
+      .notNull()
+      .default(0),
+    /**
+     * Number of skipped rows (when a error is detected)
+     */
+    numberOfSkippedRows: integer('number_of_skipped_rows').notNull().default(0),
+    /**
+     * Errors detected during ingestion
+     * @example
+     * [
+     *  {
+     *    "rowNumber": 1,
+     *    "error": "Invalid email address",
+     *  }
+     * ]
+     */
+    errors: jsonb('errors').notNull().default({}),
+    /**
+     * When the contact import was created.
+     */
+    createdAt: timestamp('created_at').notNull().defaultNow(),
+    /**
+     * When the contact import was updated.
+     */
+    updatedAt: timestamp('updated_at').notNull().defaultNow(),
+    /**
+     * When the contact import was completed.
+     */
+    completedAt: timestamp('completed_at'),
+  },
+  (t) => [
+    index('contact_imports_tenant_list_created_idx').on(
+      t.tenantId,
+      t.listId,
+      t.createdAt.desc()
+    ),
+  ]
+)
 
 /**
  * `contacts` table
