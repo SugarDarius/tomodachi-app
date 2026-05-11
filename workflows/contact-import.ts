@@ -1,4 +1,5 @@
 import { Readable } from 'node:stream'
+import { head, get } from '@vercel/blob'
 
 import { FatalError } from 'workflow'
 import { parse } from 'csv-parse'
@@ -111,18 +112,11 @@ async function fetchBlobSize({
 }: {
   blobUrl: string
 }): Promise<number> {
-  const head = await fetch(blobUrl, {
-    method: 'HEAD',
-    headers: {
-      Authorization: `Bearer ${env.BLOB_READ_WRITE_TOKEN}`,
-    },
+  const { size } = await head(blobUrl, {
+    token: env.BLOB_READ_WRITE_TOKEN,
   })
 
-  if (!head.ok) {
-    failWorkflow('Failed to get blob size')
-  }
-
-  return Number(head.headers.get('content-length') ?? 0)
+  return size
 }
 
 /**
@@ -156,7 +150,7 @@ async function prepareContactImport({
 
   const totalByteSize = await fetchBlobSize({ blobUrl: job.blobUrl })
   if (!Number.isFinite(totalByteSize) || totalByteSize <= 0) {
-    failWorkflow('Failed to get blob size')
+    failWorkflow(`Blob size is not valid: ${totalByteSize}`)
   }
 
   await db
@@ -512,7 +506,7 @@ export async function contactImportWorkflow({
     await completeContactImport({ importId })
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : String(err)
-    await markContactImportAsFailed({ importId, message })
+    // await markContactImportAsFailed({ importId, message })
 
     throw err
   }
