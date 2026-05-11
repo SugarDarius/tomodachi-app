@@ -6,20 +6,16 @@ import { Button } from '~/components/ui/button'
 import { Spinner } from '../ui/spinner'
 
 export function ImportContactsButton({ listId }: { listId: string }) {
-  const { importContacts, importing } = useImportContacts()
+  const { isListImportBusy } = useImportContacts()
 
-  if (importing[listId]) {
+  if (isListImportBusy(listId)) {
     return (
-      <Button variant='outline' disabled className=''>
+      <Button variant='outline' disabled>
         <Spinner data-icon='inline-start' />
         Importing...
       </Button>
     )
   }
 
-  const handleImport = (files: File[]) => {
-    importContacts(files, { listId })
-  }
-
-  return <ImportContactsDialog onImport={handleImport} />
+  return <ImportContactsDialog />
 }

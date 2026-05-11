@@ -20,15 +20,15 @@ import {
   DropzoneEmptyState,
 } from '~/components/kibo-ui/dropzone'
 
-export function ImportContactsDialog({
-  onImport,
-}: {
-  onImport: (files: File[]) => void
-}) {
+export function ImportContactsDialog() {
   const [open, setOpen] = useState(false)
 
   const handleDrop = (files: File[]) => {
-    onImport(files)
+    const file = files[0]
+    if (!file) {
+      return
+    }
+
     setOpen(false)
   }
 

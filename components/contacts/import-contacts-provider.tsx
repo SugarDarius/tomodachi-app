@@ -345,9 +345,9 @@ export function ImportContactsProvider({
   )
 }
 
-export function useImportContacts() {
+export function useImportContacts(): ImportContactsContextType {
   const ctx = useContext(ImportContactsContext)
-  if (ctx === undefined || (ctx === null && typeof ctx !== 'object')) {
+  if (ctx === undefined || ctx === null || typeof ctx !== 'object') {
     throw new Error(
       '`useImportContacts` must be used within an `<ImportContactsProvider />`'
     )
