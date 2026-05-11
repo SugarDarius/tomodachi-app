@@ -125,7 +125,7 @@ async function prepareContactImport({
   importId,
 }: {
   importId: string
-}): Promise<{ status: 'updated' | 'skipped' }> {
+}): Promise<{ status: 'updated' | 'skipped'; size: number }> {
   'use step'
 
   const [job] = await db
@@ -144,7 +144,7 @@ async function prepareContactImport({
 
   if (job.totalByteSize !== 0) {
     // Blob size already fetched, skip
-    return { status: 'skipped' }
+    return { status: 'skipped', size: job.totalByteSize }
   }
 
   const totalByteSize = await fetchBlobSize({ blobUrl: job.blobUrl })
@@ -160,7 +160,7 @@ async function prepareContactImport({
     })
     .where(eq(contactImports.id, importId))
 
-  return { status: 'updated' }
+  return { status: 'updated', size: totalByteSize }
 }
 
 /**
