@@ -1,5 +1,5 @@
 import { Readable } from 'node:stream'
-import { head, get } from '@vercel/blob'
+import { head } from '@vercel/blob'
 
 import { FatalError } from 'workflow'
 import { parse } from 'csv-parse'
@@ -18,6 +18,7 @@ import {
   emitContactImportDone,
   emitContactImportTick,
 } from '~/lib/realtime-emit-workflow'
+import { columnMappingRefsByIndex } from '~/lib/csv/columns'
 import {
   mapContactImportRow,
   type MappedContactImportRow,
@@ -339,8 +340,13 @@ async function ingestContactImportChunk({
     consumed = lastNewLine + 1
   }
 
-  const canonicalColumnHeaders = Object.keys(job.columnMap.canonical)
-  const columnHeaders = [...canonicalColumnHeaders, ...job.columnMap.varying]
+  /**
+   * Inlining the column headers from the column mapping
+   * to map the parsed CSV records to the contact import row.
+   */
+  const columnHeaders = columnMappingRefsByIndex(job.columnMap).map(
+    (c) => c.value
+  )
 
   const parser = parse({
     columns: columnHeaders,

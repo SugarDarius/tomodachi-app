@@ -22,7 +22,7 @@ import {
   DropzoneEmptyState,
 } from '~/components/kibo-ui/dropzone'
 import { useImportContacts } from './import-contacts-provider'
-import { type CanonicalContactField } from '~/schema'
+import { type ColumnMapping } from '~/schema'
 
 type RoleOption = {
   value: 'email' | 'first_name' | 'last_name' | 'varying'
@@ -34,6 +34,30 @@ const ROLE_OPTIONS: RoleOption[] = [
   { value: 'last_name', label: 'Last name' },
   { value: 'varying', label: 'Additional' },
 ]
+
+/**
+ * Returns the role value of a column mapping for a given header.
+ */
+const getColumnMapValue = (
+  columnMap: ColumnMapping,
+  header: string
+): RoleOption['value'] => {
+  const { canonical, varying } = columnMap
+  if (canonical.email.value === header) {
+    return 'email'
+  }
+  if (canonical.first_name.value === header) {
+    return 'first_name'
+  }
+  if (canonical.last_name.value === header) {
+    return 'last_name'
+  }
+  if (varying.some((v) => v.value === header)) {
+    return 'varying'
+  }
+
+  return 'varying'
+}
 
 export function ImportContactsDialog({ listId }: { listId: string }) {
   const {
@@ -91,27 +115,27 @@ export function ImportContactsDialog({ listId }: { listId: string }) {
   )
 
   const updateRole = useCallback(
-    (header: string, role: RoleOption['value']) => {
+    (header: string, role: RoleOption['value'], index: number) => {
       if (scoped !== null) {
         const canonical = { ...scoped.columnMap.canonical }
         const varying = [...scoped.columnMap.varying]
 
         if (role === 'varying') {
-          varying.push(header)
+          varying.push({ value: header, positionIndex: index })
         } else {
           if (role === 'email') {
-            canonical.email = header
+            canonical.email = { value: header, positionIndex: index }
           } else if (role === 'first_name') {
-            canonical.first_name = header
+            canonical.first_name = { value: header, positionIndex: index }
           } else if (role === 'last_name') {
-            canonical.last_name = header
+            canonical.last_name = { value: header, positionIndex: index }
           }
-
-          setActiveContactImportColumnMapping({
-            canonical,
-            varying,
-          })
         }
+
+        setActiveContactImportColumnMapping({
+          canonical,
+          varying,
+        })
       }
     },
     [scoped, setActiveContactImportColumnMapping]
@@ -192,7 +216,7 @@ export function ImportContactsDialog({ listId }: { listId: string }) {
                       </span>
                     </p>
                     <div className='flex flex-col gap-2'>
-                      {scoped.preview.headers.map((header) => (
+                      {scoped.preview.headers.map((header, index) => (
                         <div
                           key={header}
                           className='grid grid-cols-1 sm:grid-cols-[1fr_220px] gap-2 items-center'
@@ -205,15 +229,12 @@ export function ImportContactsDialog({ listId }: { listId: string }) {
                           </span>
                           <select
                             className='border-input bg-background text-foreground h-9 rounded-md border px-2 text-sm'
-                            value={
-                              scoped.columnMap.canonical[
-                                header as CanonicalContactField
-                              ] ?? 'varying'
-                            }
+                            value={getColumnMapValue(scoped.columnMap, header)}
                             onChange={(e) =>
                               updateRole(
                                 header,
-                                e.target.value as RoleOption['value']
+                                e.target.value as RoleOption['value'],
+                                index
                               )
                             }
                           >

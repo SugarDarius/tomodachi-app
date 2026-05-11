@@ -1,4 +1,8 @@
-import type { ColumnMapping, CanonicalColumns } from '~/schema'
+import type {
+  ColumnMapping,
+  CanonicalColumns,
+  CanonicalContactField,
+} from '~/schema'
 
 /** Collapses header strings for lookups (matches knowledge/header index). */
 export function normalizeHeader(label: string): string {
@@ -123,10 +127,25 @@ export function canonicalColumnsToColumnMapping(
   canonicalColumns: CanonicalColumns,
   allHeaders?: readonly string[]
 ): ColumnMapping {
+  const headerPositionIndex = (header: string | undefined): number => {
+    if (!header || !allHeaders) return -1
+    const i = allHeaders.indexOf(header)
+    return i >= 0 ? i : -1
+  }
+
   const canonical: ColumnMapping['canonical'] = {
-    email: canonicalColumns.email ?? '',
-    first_name: canonicalColumns.first_name ?? '',
-    last_name: canonicalColumns.last_name ?? '',
+    email: {
+      value: canonicalColumns.email ?? '',
+      positionIndex: headerPositionIndex(canonicalColumns.email),
+    },
+    first_name: {
+      value: canonicalColumns.first_name ?? '',
+      positionIndex: headerPositionIndex(canonicalColumns.first_name),
+    },
+    last_name: {
+      value: canonicalColumns.last_name ?? '',
+      positionIndex: headerPositionIndex(canonicalColumns.last_name),
+    },
   }
   const used = new Set(
     [
@@ -135,8 +154,40 @@ export function canonicalColumnsToColumnMapping(
       canonicalColumns.last_name,
     ].filter((h): h is string => typeof h === 'string' && h.length > 0)
   )
-  const varying = allHeaders?.filter((h) => !used.has(h)) ?? []
+  const varying: ColumnMapping['varying'] =
+    allHeaders
+      ?.map((h, index) => ({ value: h, positionIndex: index }))
+      .filter(({ value }) => !used.has(value)) ?? []
   return { canonical, varying }
+}
+
+export type ColumnMappingRef =
+  | {
+      kind: 'canonical'
+      field: CanonicalContactField
+      value: string
+      positionIndex: number
+    }
+  | { kind: 'varying'; value: string; positionIndex: number }
+
+/**
+ * Canonical and varying columns sorted by CSV header position index (ascending).
+ * Matches the `columns` array passed to `csv-parse` during import.
+ */
+export function columnMappingRefsByIndex(
+  columnMap: ColumnMapping
+): ColumnMappingRef[] {
+  const refs: ColumnMappingRef[] = [
+    { kind: 'canonical', field: 'email', ...columnMap.canonical.email },
+    {
+      kind: 'canonical',
+      field: 'first_name',
+      ...columnMap.canonical.first_name,
+    },
+    { kind: 'canonical', field: 'last_name', ...columnMap.canonical.last_name },
+    ...columnMap.varying.map((c) => ({ kind: 'varying' as const, ...c })),
+  ]
+  return refs.sort((a, b) => a.positionIndex - b.positionIndex)
 }
 
 /**
@@ -148,11 +199,14 @@ export function canonicalColumnsToColumnMapping(
  * @example
  * {
  *  "canonical": {
- *    "email": "email",
- *    "first_name": "firstName",
- *    "last_name": "lastName",
+ *    "email": { value: "email", positionIndex: 0 },
+ *    "first_name": { value: "firstName", positionIndex: 1 },
+ *    "last_name": { value: "lastName", positionIndex: 2 },
  *  },
- *  "varying": ["company", "phone"]
+ *  "varying": [
+ *    { value: "company", positionIndex: 3 },
+ *    { value: "phone", positionIndex: 4 },
+ *  ]
  * }
  */
 export function autoDetectColumnMapping(headers: string[]): ColumnMapping {
@@ -166,6 +220,7 @@ export function autoDetectColumnMapping(headers: string[]): ColumnMapping {
  * Ensures that there is exactly one email mapping.
  */
 export function countEmailMappings(columnMap: ColumnMapping): number {
-  return Object.values(columnMap.canonical).filter((v) => EMAIL_SYNONYMS.has(v))
-    .length
+  return Object.values(columnMap.canonical).filter(
+    (v) => v.value.length > 0 && EMAIL_SYNONYMS.has(headerMatchKey(v.value))
+  ).length
 }

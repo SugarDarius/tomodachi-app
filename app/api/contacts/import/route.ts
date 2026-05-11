@@ -1,5 +1,5 @@
 import { start } from 'workflow/api'
-import { array, object, string, urlString } from 'decoders'
+import { array, object, string, urlString, number } from 'decoders'
 import { createSafeRouteHandler } from '@sugardarius/anzen'
 
 import { type ColumnMapping, contactImports } from '~/schema'
@@ -19,11 +19,11 @@ export const POST = createSafeRouteHandler(
       contentType: string,
       columnMap: object({
         canonical: object({
-          email: string,
-          first_name: string,
-          last_name: string,
+          email: object({ value: string, positionIndex: number }),
+          first_name: object({ value: string, positionIndex: number }),
+          last_name: object({ value: string, positionIndex: number }),
         }),
-        varying: array(string),
+        varying: array(object({ value: string, positionIndex: number })),
       }).refineType<ColumnMapping>(),
     }),
     authorize: async () => {

@@ -232,9 +232,9 @@ export function ImportContactsProvider({
         },
         columnMap: {
           canonical: {
-            email: '',
-            first_name: '',
-            last_name: '',
+            email: { value: '', positionIndex: 0 },
+            first_name: { value: '', positionIndex: 1 },
+            last_name: { value: '', positionIndex: 2 },
           },
           varying: [],
         },
@@ -268,9 +268,9 @@ export function ImportContactsProvider({
           },
           columnMap: {
             canonical: {
-              email: '',
-              first_name: '',
-              last_name: '',
+              email: { value: '', positionIndex: 0 },
+              first_name: { value: '', positionIndex: 1 },
+              last_name: { value: '', positionIndex: 2 },
             },
             varying: [],
           },

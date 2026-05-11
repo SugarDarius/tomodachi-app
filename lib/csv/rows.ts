@@ -1,4 +1,6 @@
 import { email as emailDecoder } from 'decoders'
+
+import { columnMappingRefsByIndex } from '~/lib/csv/columns'
 import { type ColumnMapping } from '~/schema'
 
 /**
@@ -23,13 +25,25 @@ export function mapContactImportRow({
   record: Record<string, string>
   columnMap: ColumnMapping
 }): MappedContactImportRow | null {
-  const email_unsafe = record[columnMap.canonical.email] ?? ''
-  const firstName = record[columnMap.canonical.first_name] ?? ''
-  const lastName = record[columnMap.canonical.last_name] ?? ''
+  let email_unsafe = ''
+  let firstName = ''
+  let lastName = ''
 
   const varyingFields: Record<string, string> = {}
-  for (const varyingHeader of columnMap.varying) {
-    varyingFields[varyingHeader] = record[varyingHeader] ?? ''
+
+  for (const col of columnMappingRefsByIndex(columnMap)) {
+    const cell = record[col.value] ?? ''
+    if (col.kind === 'canonical') {
+      if (col.field === 'email') {
+        email_unsafe = cell
+      } else if (col.field === 'first_name') {
+        firstName = cell
+      } else {
+        lastName = cell
+      }
+    } else {
+      varyingFields[col.value] = cell
+    }
   }
 
   const decoderResult = emailDecoder.decode(email_unsafe)

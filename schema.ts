@@ -65,19 +65,25 @@ export type CanonicalContactField = 'email' | 'first_name' | 'last_name'
 
 /**
  * Mapping of CSV headers to the canonical and varying fields in the contacts table.
+ * The `positionIndex` is the position index of the header in the CSV file.
  * @example
  * {
  *  "canonical": {
- *    "email": "email",
- *    "first_name": "firstName",
- *    "last_name": "lastName",
+ *    "email": { value: "email", positionIndex: 0 },
+ *    "first_name": { value: "firstName", positionIndex: 1 },
+ *    "last_name": { value: "lastName", positionIndex: 2 },
  *  },
- *  "varying": ["company", "phone"]
+ *  "varying": [
+ *    { value: "company", positionIndex: 3 },
+ *    { value: "phone", positionIndex: 4 },
+ *  ]
  * }
  */
 export type ColumnMapping = {
-  canonical: { [F in CanonicalContactField]: string }
-  varying: string[]
+  canonical: {
+    [F in CanonicalContactField]: { value: string; positionIndex: number }
+  }
+  varying: { value: string; positionIndex: number }[]
 }
 
 export type CanonicalColumns = {
