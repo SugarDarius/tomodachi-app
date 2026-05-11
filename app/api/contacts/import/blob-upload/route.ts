@@ -37,14 +37,11 @@ export const POST = createSafeRouteHandler(
       token: env.BLOB_READ_WRITE_TOKEN,
       onBeforeGenerateToken: async () => {
         return {
+          allowOverwrite: true,
           allowedContentTypes: ALLOWED_CONTENT_TYPES,
           maximumSizeInBytes: MAX_CSV_UPLOAD_BYTES,
           tokenPayload: JSON.stringify({ tenantId: auth.tenantId }),
         }
-      },
-      onUploadCompleted: async () => {
-        // simple audit log
-        console.log('upload completed')
       },
     })
 

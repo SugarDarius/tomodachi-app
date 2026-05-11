@@ -326,6 +326,7 @@ export function ImportContactsProvider({
       blobUrl = uploaded.url
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err)
+      console.error(message)
       setActiveContactImport((prev) =>
         prev && prev.listId === snapshot.listId
           ? {
