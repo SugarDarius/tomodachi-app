@@ -1,5 +1,5 @@
 import { createEnv } from '@t3-oss/env-core'
-import { urlString, string } from 'decoders'
+import { urlString, string, startsWith } from 'decoders'
 
 export const env = createEnv({
   server: {
@@ -8,6 +8,7 @@ export const env = createEnv({
     NEON_AUTH_COOKIE_SECRET: string,
     UPSTASH_REDIS_REST_URL: urlString,
     UPSTASH_REDIS_REST_TOKEN: string,
+    BLOB_READ_WRITE_TOKEN: startsWith('vercel_blob_rw_'),
   },
   clientPrefix: 'NEXT_PUBLIC_',
   client: {},
