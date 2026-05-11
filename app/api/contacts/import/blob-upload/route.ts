@@ -1,14 +1,6 @@
 import { handleUpload, type HandleUploadBody } from '@vercel/blob/client'
 
-import {
-  constant,
-  object,
-  string,
-  boolean,
-  nullable,
-  taggedUnion,
-  optional,
-} from 'decoders'
+import { unknown } from 'decoders'
 import { createSafeRouteHandler } from '@sugardarius/anzen'
 
 import { env } from '~/env'
@@ -23,39 +15,10 @@ const ALLOWED_CONTENT_TYPES = [
   'application/octet-stream', // some browsers send this for .csv
 ]
 
-const generateClientTokenDecoder = object({
-  type: constant('blob.generate-client-token'),
-  payload: object({
-    pathname: string,
-    multipart: boolean,
-    clientPayload: nullable(string),
-  }),
-})
-
-const uploadCompletedDecoder = object({
-  type: constant('blob.upload-completed'),
-  payload: object({
-    blob: object({
-      url: string,
-      downloadUrl: string,
-      pathname: string,
-      contentType: string,
-      contentDisposition: string,
-      etag: string,
-    }),
-    tokenPayload: optional(nullable(string)),
-  }),
-})
-
-const bodyDecoder = taggedUnion('type', {
-  generateClientTokenDecoder,
-  uploadCompletedDecoder,
-}).refineType<HandleUploadBody>()
-
 export const POST = createSafeRouteHandler(
   {
     id: 'api/contacts/import/blob-upload',
-    body: bodyDecoder,
+    body: unknown,
     authorize: async () => {
       const { data: session } = await auth.getSession()
       if (!session) {
@@ -69,7 +32,7 @@ export const POST = createSafeRouteHandler(
   },
   async ({ auth, body }, req) => {
     const json = await handleUpload({
-      body,
+      body: body as HandleUploadBody,
       request: req,
       token: env.BLOB_READ_WRITE_TOKEN,
       onBeforeGenerateToken: async () => {

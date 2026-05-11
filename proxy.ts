@@ -8,7 +8,7 @@ const authCheck = auth.middleware({
 })
 
 /**
- * 👉🏻 Workaround to make server actions inside `/dashboard` work correctly.
+ * 👉🏻 Workaround to make server actions and POST requests inside `/dashboard` work correctly.
  * On a side note it's very disappointing from the Neon Auth lib to not support this out of the box,
  * but it was worth to test Neon auth in a real-world application, but yeah it's still under beta \__(-_-)__/
  *
@@ -20,7 +20,7 @@ const authCheck = auth.middleware({
  * Skip this proxy for action POSTs; each action still enforces auth in its own `authorize`.
  */
 export default async function proxy(req: NextRequest) {
-  if (req.method === 'POST' && req.headers.get('next-action') !== null) {
+  if (req.method === 'POST' || req.headers.get('next-action') !== null) {
     return NextResponse.next()
   }
 
