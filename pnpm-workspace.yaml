@@ -4,4 +4,7 @@ ignoredBuiltDependencies:
   - sharp
   - unrs-resolver
 onlyBuiltDependencies:
+  - '@nestjs/core'
+  - '@swc/core'
+  - cbor-extract
   - core-js
