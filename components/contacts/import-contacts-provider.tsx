@@ -363,8 +363,18 @@ export function ImportContactsProvider({
       })
 
       if (!res.ok) {
-        const text = await res.text()
-        throw new Error(text || `HTTP ${res.status}`)
+        // TODO: add better error handling here
+        console.error(res.statusText)
+        setActiveContactImport((prev) =>
+          prev && prev.listId === snapshot.listId
+            ? {
+                ...prev,
+                step: 'error',
+                errorMessage: `Could not start import: ${res.statusText}`,
+              }
+            : prev
+        )
+        return
       }
 
       apiBody = object({

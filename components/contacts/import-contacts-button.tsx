@@ -17,5 +17,5 @@ export function ImportContactsButton({ listId }: { listId: string }) {
     )
   }
 
-  return <ImportContactsDialog />
+  return <ImportContactsDialog listId={listId} />
 }
