@@ -166,5 +166,6 @@ export function autoDetectColumnMapping(headers: string[]): ColumnMapping {
  * Ensures that there is exactly one email mapping.
  */
 export function countEmailMappings(columnMap: ColumnMapping): number {
-  return Object.values(columnMap.canonical).filter((v) => v === 'email').length
+  return Object.values(columnMap.canonical).filter((v) => EMAIL_SYNONYMS.has(v))
+    .length
 }

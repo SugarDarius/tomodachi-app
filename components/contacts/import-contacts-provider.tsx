@@ -1,8 +1,10 @@
 'use client'
 
-import { object, string } from 'decoders'
-import { upload } from '@vercel/blob/client'
+import { useRouter } from 'next/navigation'
 import { createContext, useCallback, useContext, useRef, useState } from 'react'
+
+import { upload } from '@vercel/blob/client'
+import { object, string } from 'decoders'
 
 import { ColumnMapping } from '~/schema'
 import {
@@ -12,6 +14,7 @@ import {
 } from '~/lib/csv/contact-import'
 import { previewCsvHead } from '~/lib/csv/head'
 import { autoDetectColumnMapping, countEmailMappings } from '~/lib/csv/columns'
+import { useRealtime } from '~/lib/realtime-client'
 
 /**
  * Context provider for importing contacts.
@@ -109,6 +112,94 @@ export type ImportContactsContextType = {
 const ImportContactsContext = createContext<ImportContactsContextType | null>(
   null
 )
+
+/**
+ * Empty retuning component that listens to realtime events for the active contact import.
+ * Using a component instead of a hook to avoid re-rendering the parent component when the realtime events are received.
+ */
+function ImportContactsRealtime({
+  importId,
+  setActiveContactImport,
+}: {
+  importId: string
+  setActiveContactImport: React.Dispatch<
+    React.SetStateAction<ActiveContactImportState | null>
+  >
+}) {
+  const router = useRouter()
+  const lastRefreshAtRef = useRef<number>(0)
+
+  useRealtime({
+    channels: [`contact-imports:${importId}`],
+    events: ['contactImport.tick', 'contactImport.done'],
+    onData: ({ event, data }) => {
+      switch (event) {
+        case 'contactImport.tick': {
+          const {
+            numberOfInspectedRows,
+            numberOfIngestedRows,
+            numberOfSkippedRows,
+            cursorByte,
+            totalByteSize,
+          } = data
+
+          setActiveContactImport((prev) =>
+            prev
+              ? {
+                  ...prev,
+                  progress: {
+                    numberOfInspectedRows: numberOfInspectedRows,
+                    numberOfIngestedRows: numberOfIngestedRows,
+                    numberOfSkippedRows: numberOfSkippedRows,
+                    cursorByte: cursorByte,
+                    totalByteSize: totalByteSize,
+                  },
+                }
+              : prev
+          )
+          if (numberOfIngestedRows > 0) {
+            const now = Date.now()
+            if (now - lastRefreshAtRef.current > 1200) {
+              lastRefreshAtRef.current = now
+              router.refresh()
+            }
+          }
+          break
+        }
+        case 'contactImport.done': {
+          const { ingestionStatus, lastError } = data
+
+          if (ingestionStatus === 'failed') {
+            setActiveContactImport((prev) =>
+              prev
+                ? {
+                    ...prev,
+                    step: 'error',
+                    errorMessage: lastError ?? 'Import failed.',
+                  }
+                : prev
+            )
+            return
+          }
+
+          setActiveContactImport((prev) =>
+            prev
+              ? {
+                  ...prev,
+                  step: 'completed',
+                  errorMessage: undefined,
+                }
+              : prev
+          )
+          lastRefreshAtRef.current = Date.now()
+          router.refresh()
+        }
+      }
+    },
+  })
+
+  return null
+}
 
 export function ImportContactsProvider({
   children,
@@ -340,6 +431,12 @@ export function ImportContactsProvider({
         isListImportBusy,
       }}
     >
+      {activeContactImport && activeContactImport.importId ? (
+        <ImportContactsRealtime
+          importId={activeContactImport.importId}
+          setActiveContactImport={setActiveContactImport}
+        />
+      ) : null}
       {children}
     </ImportContactsContext.Provider>
   )
