@@ -6,6 +6,8 @@ export const env = createEnv({
     NEON_DATABASE_CONNECTION_STRING: string,
     NEON_AUTH_BASE_URL: urlString,
     NEON_AUTH_COOKIE_SECRET: string,
+    UPSTASH_REDIS_REST_URL: urlString,
+    UPSTASH_REDIS_REST_TOKEN: string,
   },
   clientPrefix: 'NEXT_PUBLIC_',
   client: {},
