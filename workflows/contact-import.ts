@@ -240,33 +240,38 @@ async function flushContactImportBatch({
 
   const uniqueRows = [...dedupedByNormalizedEmail.values()]
 
-  const upsertedContacts = await db
-    .insert(contacts)
-    .values(
-      uniqueRows.map((r) => ({
-        tenantId,
-        email: r.email,
-        firstName: r.firstName,
-        lastName: r.lastName,
-        varyingFields: r.varyingFields,
-        completedAt: sql`now()`,
-      }))
-    )
-    .returning({ id: contacts.id })
-
-  if (upsertedContacts.length > 0) {
-    await db
-      .insert(contactsListMembers)
+  try {
+    const upsertedContacts = await db
+      .insert(contacts)
       .values(
-        upsertedContacts.map((row) => ({
-          listId,
-          contactId: row.id,
+        uniqueRows.map((r) => ({
+          tenantId,
+          email: r.email,
+          firstName: r.firstName,
+          lastName: r.lastName,
+          varyingFields: r.varyingFields,
+          completedAt: sql`now()`,
         }))
       )
-      .onConflictDoNothing()
-  }
+      .returning({ id: contacts.id })
 
-  return { committed: upsertedContacts.length }
+    if (upsertedContacts.length > 0) {
+      await db
+        .insert(contactsListMembers)
+        .values(
+          upsertedContacts.map((row) => ({
+            listId,
+            contactId: row.id,
+          }))
+        )
+        .onConflictDoNothing()
+    }
+
+    return { committed: upsertedContacts.length }
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err)
+    return failWorkflow(`Failed to upsert contacts: ${message}`)
+  }
 }
 /**
  * Ingest a chunk of the contact import.
