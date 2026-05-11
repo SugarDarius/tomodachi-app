@@ -6,7 +6,6 @@ import {
   check,
   jsonb,
   timestamp,
-  uniqueIndex,
   index,
   primaryKey,
   pgEnum,
@@ -255,13 +254,6 @@ export const contacts = pgTable(
      */
     lastName: text('last_name').notNull().default(''),
     /**
-     * The normalized email address of the contact.
-     * Generated for indexing and dedupe. Never set manually in inserts.
-     */
-    emailNormalized: text('email_normalized').generatedAlwaysAs(
-      sql`lower(trim(email))`
-    ),
-    /**
      * Optional JSON for varying fields not modeled as columns (phones, tags, etc.).
      */
     varyingFields: jsonb('varying_fields').notNull().default({}),
@@ -280,10 +272,7 @@ export const contacts = pgTable(
   },
   (t) => [
     check('email_present', sql`length(trim(email)) > 0`),
-    uniqueIndex('contacts_tenant_email_normalized_uidx').on(
-      t.tenantId,
-      t.emailNormalized
-    ),
+    index('contacts_tenant_email_idx').on(t.tenantId, t.email),
     index('contacts_tenant_created_idx').on(t.tenantId, t.createdAt.desc()),
   ]
 )

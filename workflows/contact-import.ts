@@ -249,17 +249,9 @@ async function flushContactImportBatch({
         firstName: r.firstName,
         lastName: r.lastName,
         varyingFields: r.varyingFields,
+        completedAt: sql`now()`,
       }))
     )
-    .onConflictDoUpdate({
-      target: [contacts.tenantId, contacts.emailNormalized],
-      set: {
-        firstName: sql`excluded.first_name`,
-        lastName: sql`excluded.last_name`,
-        varyingFields: sql`excluded.varying_fields`,
-        updatedAt: sql`now()`,
-      },
-    })
     .returning({ id: contacts.id })
 
   if (upsertedContacts.length > 0) {
