@@ -49,20 +49,18 @@ async function appendContactImportErrorEntries({
     .update(contactImports)
     .set({
       errors: sql`(
-        SELECT to_jsonb(arr)
+        SELECT COALESCE(
+          jsonb_agg(elem ORDER BY ord ASC),
+          '[]'::jsonb
+        )
         FROM (
-          SELECT array_agg(elem ORDER BY ord)
-          FROM (
-            SELECT elem, ord
-            FROM unnest(
-              ARRAY(SELECT jsonb_array_elements(${contactImports.errors})) ||
-              ARRAY(SELECT jsonb_array_elements(${incoming}::jsonb))
-            ) WITH ORDINALITY AS u(elem, ord)
-            ORDER BY ord DESC
-            LIMIT ${CONTACT_IMPORT_ERRORS_CAPACITY}
-          ) recent
-          ORDER BY ord ASC
-        ) arr(arr)
+          SELECT elem, ord
+          FROM jsonb_array_elements(
+            COALESCE(${contactImports.errors}, '[]'::jsonb) || ${incoming}::jsonb
+          ) WITH ORDINALITY AS u(elem, ord)
+          ORDER BY ord DESC
+          LIMIT ${CONTACT_IMPORT_ERRORS_CAPACITY}
+        ) recent
       )`,
       updatedAt: sql`now()`,
     })
@@ -506,7 +504,7 @@ export async function contactImportWorkflow({
     await completeContactImport({ importId })
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : String(err)
-    // await markContactImportAsFailed({ importId, message })
+    await markContactImportAsFailed({ importId, message })
 
     throw err
   }
