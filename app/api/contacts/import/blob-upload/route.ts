@@ -11,6 +11,7 @@ import {
 } from 'decoders'
 import { createSafeRouteHandler } from '@sugardarius/anzen'
 
+import { env } from '~/env'
 import { auth } from '~/lib/auth/server'
 
 // Hard cap for file upload max size in bytes.
@@ -70,6 +71,7 @@ export const POST = createSafeRouteHandler(
     const json = await handleUpload({
       body,
       request: req,
+      token: env.BLOB_READ_WRITE_TOKEN,
       onBeforeGenerateToken: async () => {
         return {
           allowedContentTypes: ALLOWED_CONTENT_TYPES,

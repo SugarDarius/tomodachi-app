@@ -317,9 +317,9 @@ export function ImportContactsProvider({
     let blobUrl: string
     try {
       const uploaded = await upload(snapshot.file.name, snapshot.file, {
-        access: 'public',
+        access: 'private',
         handleUploadUrl: '/api/contacts/import/blob-upload',
-        // Use multipart upload for large files (> 95MB | 1M+ rows)
+        // Use multipart upload for large files (> 95MB | ~1M+ rows)
         multipart: snapshot.file.size > 95 * 1024 * 1024,
         contentType: snapshot.file.type || 'text/csv',
       })
@@ -350,7 +350,7 @@ export function ImportContactsProvider({
 
     let apiBody: CreateContactImportResponseBody
     try {
-      const res = await fetch('/api/contact-imports', {
+      const res = await fetch('/api/contacts/import', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify({

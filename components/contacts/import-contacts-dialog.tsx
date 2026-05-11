@@ -32,7 +32,7 @@ const ROLE_OPTIONS: RoleOption[] = [
   { value: 'email', label: 'Email' },
   { value: 'first_name', label: 'First name' },
   { value: 'last_name', label: 'Last name' },
-  { value: 'varying', label: 'Varying' },
+  { value: 'varying', label: 'Additional' },
 ]
 
 export function ImportContactsDialog({ listId }: { listId: string }) {
