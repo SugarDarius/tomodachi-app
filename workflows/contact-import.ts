@@ -21,6 +21,7 @@ import {
   mapContactImportRow,
   type MappedContactImportRow,
 } from '~/lib/csv/rows'
+import { env } from 'node:process'
 
 /* fail the workflow explcitly with a `FatalError` */
 const failWorkflow = (message: string): never => {
@@ -112,6 +113,9 @@ async function fetchBlobSize({
 }): Promise<number> {
   const head = await fetch(blobUrl, {
     method: 'HEAD',
+    headers: {
+      Authorization: `Bearer ${env.BLOB_READ_WRITE_TOKEN}`,
+    },
   })
 
   if (!head.ok) {
@@ -128,7 +132,7 @@ async function prepareContactImport({
   importId,
 }: {
   importId: string
-}): Promise<void> {
+}): Promise<{ status: 'updated' | 'skipped' }> {
   'use step'
 
   const [job] = await db
@@ -145,9 +149,9 @@ async function prepareContactImport({
     failWorkflow('Contact import not found')
   }
 
-  if (job.totalByteSize !== null) {
+  if (job.totalByteSize !== 0) {
     // Blob size already fetched, skip
-    return
+    return { status: 'skipped' }
   }
 
   const totalByteSize = await fetchBlobSize({ blobUrl: job.blobUrl })
@@ -162,6 +166,8 @@ async function prepareContactImport({
       updatedAt: sql`now()`,
     })
     .where(eq(contactImports.id, importId))
+
+  return { status: 'updated' }
 }
 
 /**
@@ -186,6 +192,7 @@ const fetchBlobChunkByRange = async ({
   const res = await fetch(blobUrl, {
     headers: {
       Range: `bytes=${rangeStart}-${rangeEnd}`,
+      Authorization: `Bearer ${env.BLOB_READ_WRITE_TOKEN}`,
     },
   })
 
