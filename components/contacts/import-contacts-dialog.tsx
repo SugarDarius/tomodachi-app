@@ -1,21 +1,21 @@
 'use client'
 
 import { useState, useMemo, useCallback } from 'react'
-import { Upload } from 'lucide-react'
+import { Upload, FileWarning } from 'lucide-react'
 
 import { Button } from '~/components/ui/button'
 import { Spinner } from '~/components/ui/spinner'
 import { Label } from '~/components/ui/label'
 import {
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from '~/components/ui/dialog'
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from '~/components/ui/sheet'
 import {
   Dropzone,
   DropzoneContent,
@@ -32,7 +32,7 @@ const ROLE_OPTIONS: RoleOption[] = [
   { value: 'email', label: 'Email' },
   { value: 'first_name', label: 'First name' },
   { value: 'last_name', label: 'Last name' },
-  { value: 'varying', label: 'Ignore' },
+  { value: 'varying', label: 'Varying' },
 ]
 
 export function ImportContactsDialog({ listId }: { listId: string }) {
@@ -124,34 +124,37 @@ export function ImportContactsDialog({ listId }: { listId: string }) {
   }, [scoped, submitActiveContactImport])
 
   return (
-    <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogTrigger asChild>
+    <Sheet open={open} onOpenChange={handleOpenChange}>
+      <SheetTrigger asChild>
         <Button variant='default'>
           <Upload className='size-4' />
           Import new contacts
         </Button>
-      </DialogTrigger>
-      <DialogContent className='sm:max-w-lg w-xl'>
-        <DialogHeader>
-          <DialogTitle>Import contacts</DialogTitle>
-          <DialogDescription>
+      </SheetTrigger>
+      <SheetContent className='w-4xl! max-w-4xl!'>
+        <SheetHeader className='border-border border-b'>
+          <SheetTitle>Import contacts</SheetTitle>
+          <SheetDescription>
             Import new contacts from a CSV file.
-          </DialogDescription>
-        </DialogHeader>
-        <div className='flex flex-col gap-2'>
+          </SheetDescription>
+        </SheetHeader>
+        <div className='flex flex-col gap-2 p-4 flex-1'>
           {scoped === null ? (
-            <Dropzone
-              disabled={busy}
-              maxFiles={1}
-              accept={{ 'text/csv': ['.csv'] }}
-              maxSize={1024 * 1024 * 1024} // 1GB
-              minSize={1024}
-              onDrop={handleDrop}
-              onError={handleError}
-            >
-              <DropzoneEmptyState />
-              <DropzoneContent />
-            </Dropzone>
+            <div className='flex flex-1 justify-center items-center'>
+              <Dropzone
+                disabled={busy}
+                maxFiles={1}
+                accept={{ 'text/csv': ['.csv'] }}
+                maxSize={1024 * 1024 * 1024} // 1GB
+                minSize={1024}
+                onDrop={handleDrop}
+                onError={handleError}
+                className='w-full h-full'
+              >
+                <DropzoneEmptyState />
+                <DropzoneContent />
+              </Dropzone>
+            </div>
           ) : (
             <>
               {scoped.step === 'reading_preview' ? (
@@ -174,6 +177,20 @@ export function ImportContactsDialog({ listId }: { listId: string }) {
                     <Label className='text-xs uppercase tracking-wide'>
                       Column mapping
                     </Label>
+                    <p className='text-xs text-muted-foreground'>
+                      Map the columns of the CSV file to the contact fields.
+                      <br />
+                      <span className='text-destructive inline-flex items-center gap-0.5'>
+                        <FileWarning className='size-4' />
+                        The email, first_name, and last_name columns are
+                        required.
+                        <br />
+                        <span className='text-muted-foreground text-xs'>
+                          The varying column is used to map additional columns
+                          to the contact fields.
+                        </span>
+                      </span>
+                    </p>
                     <div className='flex flex-col gap-2'>
                       {scoped.preview.headers.map((header) => (
                         <div
@@ -213,7 +230,7 @@ export function ImportContactsDialog({ listId }: { listId: string }) {
 
                   <div className='rounded-md border overflow-x-auto max-h-56 overflow-y-auto'>
                     <table className='w-full text-xs'>
-                      <thead className='bg-muted/60 sticky top-0'>
+                      <thead className='bg-muted sticky top-0'>
                         <tr>
                           {scoped.preview.headers.map((h, colIdx) => (
                             <th
@@ -226,40 +243,44 @@ export function ImportContactsDialog({ listId }: { listId: string }) {
                         </tr>
                       </thead>
                       <tbody>
-                        {scoped.preview.sampleRows.map((row, idx) => (
-                          <tr key={idx} className='border-t'>
-                            {scoped.preview.headers.map((h, colIdx) => (
-                              <td
-                                key={`${colIdx}:${h}`}
-                                className='px-2 py-1 whitespace-nowrap'
-                              >
-                                {row[h] ?? ''}
-                              </td>
-                            ))}
-                          </tr>
-                        ))}
+                        {scoped.preview.sampleRows
+                          .slice(0, 10)
+                          .map((row, idx) => (
+                            <tr key={idx} className='border-t'>
+                              {scoped.preview.headers.map((h, colIdx) => (
+                                <td
+                                  key={`${colIdx}:${h}`}
+                                  className='px-2 py-1 whitespace-nowrap'
+                                >
+                                  {row[h] ?? ''}
+                                </td>
+                              ))}
+                            </tr>
+                          ))}
                       </tbody>
                     </table>
                   </div>
 
                   {scoped.step === 'mapping' ? (
-                    <Button onClick={handleSubmit} disabled={busy}>
-                      Start import
-                    </Button>
+                    <div className='flex justify-end'>
+                      <Button onClick={handleSubmit} disabled={busy}>
+                        Start import
+                      </Button>
+                    </div>
                   ) : null}
                 </div>
               ) : null}
             </>
           )}
         </div>
-        <DialogFooter className='border-0'>
-          <DialogClose asChild>
+        <SheetFooter className='border-0'>
+          <SheetClose asChild>
             <Button type='button' variant='outline'>
               Close
             </Button>
-          </DialogClose>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+          </SheetClose>
+        </SheetFooter>
+      </SheetContent>
+    </Sheet>
   )
 }
