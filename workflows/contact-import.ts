@@ -16,7 +16,7 @@ import {
 import {
   emitContactImportDone,
   emitContactImportTick,
-} from '~/lib/realtime-emit'
+} from '~/lib/realtime-emit-workflow'
 import {
   mapContactImportRow,
   type MappedContactImportRow,
