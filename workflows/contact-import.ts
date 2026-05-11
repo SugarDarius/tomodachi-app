@@ -199,7 +199,7 @@ const fetchBlobChunkByRange = async ({
 /**
  * The size of the batch to upsert contacts.
  */
-const BATCH_SIZE = 1000
+const BATCH_UPSERT_SIZE = 1000
 
 /**
  * Neon HTTP driver has **no interactive transactions**. Each Drizzle call is one round-trip;
@@ -217,7 +217,7 @@ const BATCH_SIZE = 1000
  *  - The contacts upsert is row-idempotent (`ON CONFLICT DO
  *   UPDATE`); memberships are skip-on-conflict. Counters increment in `ingestContactImportChunk`
  *   per chunk, so a chunk that succeeds halfway and then retries can double-count up to
- *   one `BATCH_SIZE` worth of rows in the counters. That drift is acceptable because the
+ *   one `BATCH_UPSERT_SIZE` worth of rows in the counters. That drift is acceptable because the
  *   underlying contact rows are correct and the cursor advances only on full chunk success.
  */
 async function flushContactImportBatch({
@@ -398,7 +398,7 @@ async function ingestContactImportChunk({
       continue
     }
     batch.push(mappedRow)
-    if (batch.length >= BATCH_SIZE) {
+    if (batch.length >= BATCH_UPSERT_SIZE) {
       await flushBatch()
     }
   }
