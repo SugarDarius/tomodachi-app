@@ -504,8 +504,8 @@ export async function contactImportWorkflow({
 
     await completeContactImport({ importId })
   } catch (err: unknown) {
-    const msg = err instanceof Error ? err.message : String(err)
-    await markContactImportAsFailed({ importId, message: msg })
+    const message = err instanceof Error ? err.message : String(err)
+    await markContactImportAsFailed({ importId, message })
 
     throw err
   }
