@@ -27,3 +27,21 @@ export async function emitContactImportDone({
   const channel = getContactImportRealtimeChannel({ importId })
   await channel.emit('contactImport.done', payload)
 }
+
+export async function emitContactImportTick({
+  importId,
+  payload,
+}: {
+  importId: string
+  payload: {
+    numberOfInspectedRows: number
+    numberOfIngestedRows: number
+    numberOfSkippedRows: number
+    cursorByte: number
+    totalByteSize: number | null
+    ingestionStatus: 'running' | 'completed' | 'failed'
+  }
+}) {
+  const channel = getContactImportRealtimeChannel({ importId })
+  await channel.emit('contactImport.tick', payload)
+}

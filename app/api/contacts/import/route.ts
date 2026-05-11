@@ -1,10 +1,13 @@
+import { start } from 'workflow/api'
 import { array, object, string, urlString } from 'decoders'
 import { createSafeRouteHandler } from '@sugardarius/anzen'
 
-import { contactImports } from '~/schema'
+import { type ColumnMapping, contactImports } from '~/schema'
 
 import { db } from '~/lib/db'
 import { auth } from '~/lib/auth/server'
+
+import { contactImportWorkflow } from '~/workflows/contact-import'
 
 export const POST = createSafeRouteHandler(
   {
@@ -17,11 +20,11 @@ export const POST = createSafeRouteHandler(
       columnMap: object({
         canonical: object({
           email: string,
-          firstName: string,
-          lastName: string,
+          first_name: string,
+          last_name: string,
         }),
         varying: array(string),
-      }),
+      }).refineType<ColumnMapping>(),
     }),
     authorize: async () => {
       const { data: session } = await auth.getSession()
@@ -54,10 +57,16 @@ export const POST = createSafeRouteHandler(
     }
 
     // START IMPORT WORKFLOW
+    const run = await start(contactImportWorkflow, [
+      {
+        importId: contactImportId,
+      },
+    ])
 
     return Response.json(
       {
         contactImportId,
+        workFlowRunId: run.runId,
       },
       { status: 200 }
     )

@@ -1,0 +1,1 @@
+ALTER TABLE "contact_imports" ALTER COLUMN "column_map" DROP DEFAULT;

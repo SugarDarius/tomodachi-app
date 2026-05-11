@@ -60,6 +60,30 @@ export const contactsLists = pgTable(
 export type ContactsList = typeof contactsLists.$inferSelect
 export type CreateContactsList = typeof contactsLists.$inferInsert
 
+/* Canonical contact columns stored as first-class DB citizens) */
+export type CanonicalContactField = 'email' | 'first_name' | 'last_name'
+
+/**
+ * Mapping of CSV headers to the canonical and varying fields in the contacts table.
+ * @example
+ * {
+ *  "canonical": {
+ *    "email": "email",
+ *    "first_name": "firstName",
+ *    "last_name": "lastName",
+ *  },
+ *  "varying": ["company", "phone"]
+ * }
+ */
+export type ColumnMapping = {
+  canonical: { [F in CanonicalContactField]: string }
+  varying: string[]
+}
+
+export type CanonicalColumns = {
+  [F in CanonicalContactField]?: string
+}
+
 /**
  * Enum for the ingestion status of a contact import.
  */
@@ -123,7 +147,7 @@ export const contactImports = pgTable(
      *  "varying": ["company", "phone"]
      * }
      */
-    columnMap: jsonb('column_map').notNull().default({}),
+    columnMap: jsonb('column_map').$type<ColumnMapping>().notNull(),
     /**
      * Ingestion status of the contact import.
      */
