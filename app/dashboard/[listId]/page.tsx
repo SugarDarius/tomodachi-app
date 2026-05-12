@@ -23,9 +23,9 @@ import {
 import { ImportContactsButtonSuspense } from '~/components/contacts/import-contact-button-suspense'
 
 import {
-  ContactsListAction,
+  ContactsListActionSuspense,
   ContactsListActionSkeleton,
-} from './_components/contacts-list-action'
+} from './_components/contacts-list-action-suspense'
 
 export default async function Page({
   params,
@@ -63,7 +63,7 @@ export default async function Page({
             <ImportContactsButtonSuspense params={params} />
           </Suspense>
           <Suspense fallback={<ContactsListActionSkeleton />}>
-            <ContactsListAction params={params} />
+            <ContactsListActionSuspense params={params} />
           </Suspense>
         </div>
       </div>
