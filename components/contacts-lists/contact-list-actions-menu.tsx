@@ -1,6 +1,6 @@
 'use client'
 
-import { Pencil, Trash2 } from 'lucide-react'
+import { Pencil, Trash2, Download } from 'lucide-react'
 
 import { type ContactsList } from '~/schema'
 
@@ -45,6 +45,10 @@ export function ContactListActionsMenu({
             Rename
           </DropdownMenuItem>
         </RenameContactListDialog>
+        <DropdownMenuItem disabled>
+          <Download className='size-4' />
+          Export as CSV
+        </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DeleteContactListDialog list={list}>
           <DropdownMenuItem
