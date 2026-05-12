@@ -4,7 +4,7 @@ import { head } from '@vercel/blob'
 import { FatalError } from 'workflow'
 import { parse } from 'csv-parse'
 
-import { eq, sql } from 'drizzle-orm'
+import { and, eq, isNull, sql } from 'drizzle-orm'
 
 import { db } from '~/lib/db'
 import {
@@ -13,6 +13,7 @@ import {
   type ContactImportErrorEntry,
   CONTACT_IMPORT_ERRORS_CAPACITY,
   contactsListMembers,
+  contactsLists,
 } from '~/schema'
 import {
   emitContactImportDone,
@@ -476,7 +477,7 @@ async function completeContactImport({
 }): Promise<void> {
   'use step'
 
-  await db
+  const [job] = await db
     .update(contactImports)
     .set({
       ingestionStatus: 'completed',
@@ -484,6 +485,23 @@ async function completeContactImport({
       updatedAt: sql`now()`,
     })
     .where(eq(contactImports.id, importId))
+    .returning({
+      columnMap: contactImports.columnMap,
+      listId: contactImports.listId,
+    })
+
+  if (!job) {
+    failWorkflow('Contact import not found while completing')
+  }
+
+  await db
+    .update(contactsLists)
+    .set({
+      columnMap: job.columnMap,
+    })
+    .where(
+      and(eq(contactsLists.id, job.listId), isNull(contactsLists.deletedAt))
+    )
 
   await emitContactImportDone({
     importId,
