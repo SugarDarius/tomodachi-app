@@ -12,7 +12,7 @@ import {
 } from 'decoders'
 import { useState } from 'react'
 
-import { type Contact } from '~/schema'
+import { type ColumnMapping, type Contact } from '~/schema'
 import { useSafeSWR } from '~/hooks/use-safe-swr'
 
 import { type ContactsListMembersPage } from '../_lib/contacts-list'
@@ -34,6 +34,14 @@ const paginatedContactsListDecoder = object({
       deletedAt: nullable(flexDate),
     })
   ).refineType<Contact[]>(),
+  columnMap: object({
+    canonical: object({
+      email: object({ value: string, positionIndex: number }),
+      first_name: object({ value: string, positionIndex: number }),
+      last_name: object({ value: string, positionIndex: number }),
+    }),
+    varying: array(object({ value: string, positionIndex: number })),
+  }).refineType<ColumnMapping>(),
   totalCount: number,
   pageIndex: number,
   pageSize: number,

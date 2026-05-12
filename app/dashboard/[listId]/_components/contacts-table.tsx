@@ -2,17 +2,12 @@
 
 import { ContactIcon, ArrowLeft, ArrowRight } from 'lucide-react'
 
-import { type Contact } from '~/schema'
-
-import { formatDateAsEnUs } from '~/utils/format-date'
 import { formatNumberWithCommas } from '~/utils/format-number'
 import { cn } from '~/lib/utils'
 
 import {
-  type ColumnDef,
   TableBody,
   TableCell,
-  TableColumnHeader,
   TableHead,
   TableHeader,
   TableHeaderGroup,
@@ -23,7 +18,9 @@ import { Button } from '~/components/ui/button'
 import { ImportContactsButton } from '~/components/contacts/import-contacts-button'
 
 import { type ContactsListMembersPage } from '../_lib/contacts-list'
+
 import { usePaginatedContactsList } from '../_hooks/use-paginated-contacts-list'
+import { useDynamicColumns } from '../_hooks/use-dynamic-columns'
 
 export function ContactsTable({
   listId,
@@ -34,42 +31,7 @@ export function ContactsTable({
 }) {
   const { page, handlePrevious, handleNext, canGoPrevious, canGoNext } =
     usePaginatedContactsList({ listId, initialPage })
-  // TODO: add specific hook for columns definition
-  const columns: ColumnDef<Contact>[] = [
-    {
-      id: 'email',
-      accessorKey: 'email',
-      header: ({ column }) => (
-        <TableColumnHeader column={column} title='Email' />
-      ),
-    },
-    {
-      id: 'firstName',
-      accessorKey: 'firstName',
-      header: ({ column }) => (
-        <TableColumnHeader column={column} title='First Name' />
-      ),
-    },
-    {
-      id: 'lastName',
-      accessorKey: 'lastName',
-      header: ({ column }) => (
-        <TableColumnHeader column={column} title='Last Name' />
-      ),
-    },
-    {
-      id: 'createdAt',
-      accessorKey: 'createdAt',
-      header: ({ column }) => (
-        <TableColumnHeader
-          column={column}
-          title='Created At'
-          className='justify-end'
-        />
-      ),
-      cell: ({ row }) => formatDateAsEnUs(row.original.createdAt),
-    },
-  ]
+  const columns = useDynamicColumns({ columnMap: page.columnMap })
 
   if (page.totalCount === 0) {
     return (
@@ -107,7 +69,7 @@ export function ContactsTable({
                       cell={cell}
                       key={cell.id}
                       className={cn({
-                        'text-right': cell.column.id === 'createdAt',
+                        'text-right': cell.column.id === 'updatedAt',
                       })}
                     />
                   )}

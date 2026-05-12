@@ -1,7 +1,7 @@
 import 'server-only'
 import { cacheTag } from 'next/cache'
 
-import { isNull } from 'drizzle-orm'
+import { asc, isNull } from 'drizzle-orm'
 
 import { db } from '~/lib/db'
 import { contactsLists, type ContactsList } from '~/schema'
@@ -17,5 +17,6 @@ export async function getContactsLists(): Promise<ContactsList[]> {
     .select()
     .from(contactsLists)
     .where(isNull(contactsLists.deletedAt))
+    .orderBy(asc(contactsLists.createdAt))
   return lists
 }

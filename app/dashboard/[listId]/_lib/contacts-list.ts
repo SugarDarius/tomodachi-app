@@ -10,6 +10,7 @@ import {
   contactsListMembers,
   contactsLists,
   type ContactsList,
+  type ColumnMapping,
 } from '~/schema'
 import {
   DEFAULT_PAGE_INDEX,
@@ -42,6 +43,7 @@ export async function getContactsList({
 
 export type ContactsListMembersPage = {
   contacts: Contact[]
+  columnMap: ColumnMapping
   totalCount: number
   pageIndex: number
   pageSize: number
@@ -64,7 +66,7 @@ export async function getContactsListMembersPaginated({
   const $pageIndex = Math.max(1, Math.floor(pageIndex))
   const $pageSize = Math.min(MAX_PAGE_SIZE, Math.max(1, Math.floor(pageSize)))
 
-  const [countRowResult, contactsPage] = await Promise.all([
+  const [countRowResult, contactsPage, list] = await Promise.all([
     db
       .select({ totalCount: count() })
       .from(contactsListMembers)
@@ -77,11 +79,24 @@ export async function getContactsListMembersPaginated({
       .orderBy(desc(contactsListMembers.addedAt))
       .limit($pageSize)
       .offset(($pageIndex - 1) * $pageSize),
+    db
+      .select({ columnMap: contactsLists.columnMap })
+      .from(contactsLists)
+      .where(eq(contactsLists.id, id))
+      .limit(1),
   ])
 
   const totalCount = Number(countRowResult[0]?.totalCount ?? 0)
   return {
     contacts: contactsPage,
+    columnMap: list[0]?.columnMap ?? {
+      canonical: {
+        email: { value: 'email', positionIndex: 0 },
+        first_name: { value: 'firstName', positionIndex: 1 },
+        last_name: { value: 'lastName', positionIndex: 2 },
+      },
+      varying: [],
+    },
     totalCount,
     pageIndex: $pageIndex,
     canGoNext: $pageIndex * $pageSize < totalCount,
