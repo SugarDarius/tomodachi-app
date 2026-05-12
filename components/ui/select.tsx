@@ -111,8 +111,12 @@ function SelectLabel({
 function SelectItem({
   className,
   children,
+  label,
   ...props
-}: React.ComponentProps<typeof SelectPrimitive.Item>) {
+}: React.ComponentProps<typeof SelectPrimitive.Item> & {
+  /** Shown in the closed trigger; dropdown row still renders `children`. */
+  label?: React.ReactNode
+}) {
   return (
     <SelectPrimitive.Item
       data-slot='select-item'
@@ -127,7 +131,8 @@ function SelectItem({
           <CheckIcon className='pointer-events-none' />
         </SelectPrimitive.ItemIndicator>
       </span>
-      <SelectPrimitive.ItemText>{children}</SelectPrimitive.ItemText>
+      <SelectPrimitive.ItemText>{label ?? children}</SelectPrimitive.ItemText>
+      {label != null ? children : null}
     </SelectPrimitive.Item>
   )
 }
