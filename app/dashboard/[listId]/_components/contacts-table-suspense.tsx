@@ -1,6 +1,6 @@
 import { Skeleton } from '~/components/ui/skeleton'
 
-import { getContactsListMembers } from '../_lib/contacts-list'
+import { getContactsListMembersPaginated } from '../_lib/contacts-list'
 import { ContactsTable } from './contacts-table'
 
 export const ContactsTableSkeleton = () => <Skeleton className='w-full h-18' />
@@ -11,7 +11,7 @@ export async function ContactsTableSuspense({
   params: Promise<{ listId: string }>
 }) {
   const { listId } = await params
-  const initialPage = await getContactsListMembers({ id: listId })
+  const initialPage = await getContactsListMembersPaginated({ id: listId })
 
   return <ContactsTable listId={listId} initialPage={initialPage} />
 }

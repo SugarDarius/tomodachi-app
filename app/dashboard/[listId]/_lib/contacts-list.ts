@@ -11,6 +11,11 @@ import {
   contactsLists,
   type ContactsList,
 } from '~/schema'
+import {
+  DEFAULT_PAGE_INDEX,
+  DEFAULT_PAGE_SIZE,
+  MAX_PAGE_SIZE,
+} from './constants'
 
 /**
  * Simpler server function to get a single contacts list by its ID.
@@ -35,32 +40,31 @@ export async function getContactsList({
   return list[0]
 }
 
-const DEFAULT_PAGE_SIZE = 20
-const MAX_PAGE_SIZE = 100
-
 export type ContactsListMembersPage = {
   contacts: Contact[]
   totalCount: number
-  page: number
+  pageIndex: number
   pageSize: number
+  canGoNext: boolean
+  canGoPrevious: boolean
 }
 
 /**
- * Server function to get one page of contacts in a list (newest membership first).
+ * Server function to get a paginated page of contacts in a list (newest membership first).
  */
-export async function getContactsListMembers({
+export async function getContactsListMembersPaginated({
   id,
-  page = 1,
+  pageIndex = DEFAULT_PAGE_INDEX,
   pageSize = DEFAULT_PAGE_SIZE,
 }: {
   id: string
-  page?: number
+  pageIndex?: number
   pageSize?: number
 }): Promise<ContactsListMembersPage> {
   'use cache'
-  cacheTag(`contacts-list-members:${id}:page=${page}:pageSize=${pageSize}`)
+  cacheTag(`contacts-list-members:${id}:page=${pageIndex}:pageSize=${pageSize}`)
 
-  const $page = Math.max(1, Math.floor(page))
+  const $pageIndex = Math.max(1, Math.floor(pageIndex))
   const $pageSize = Math.min(MAX_PAGE_SIZE, Math.max(1, Math.floor(pageSize)))
 
   const [countRowResult, contactsPage] = await Promise.all([
@@ -75,14 +79,16 @@ export async function getContactsListMembers({
       .where(eq(contactsListMembers.listId, id))
       .orderBy(desc(contactsListMembers.addedAt))
       .limit($pageSize)
-      .offset(($page - 1) * $pageSize),
+      .offset(($pageIndex - 1) * $pageSize),
   ])
 
   const totalCount = Number(countRowResult[0]?.totalCount ?? 0)
   return {
     contacts: contactsPage,
     totalCount,
-    page: $page,
+    pageIndex: $pageIndex,
+    canGoNext: $pageIndex * $pageSize < totalCount,
+    canGoPrevious: $pageIndex > 1,
     pageSize: $pageSize,
   }
 }

@@ -21,6 +21,7 @@ import {
 import { ImportContactsButton } from '~/components/contacts/import-contacts-button'
 
 import { type ContactsListMembersPage } from '../_lib/contacts-list'
+import { usePaginatedContactsList } from '../_hooks/use-paginated-contacts-list'
 
 export function ContactsTable({
   listId,
@@ -29,12 +30,7 @@ export function ContactsTable({
   listId: string
   initialPage: ContactsListMembersPage
 }) {
-  const { totalCount, contacts: initialContacts } = initialPage
-  // TODO: add client side hydration after initial page is loaded
-
-  // TODO: add hook to handle pagination, sorting and filtering
-
-  // TODO: add paginator component
+  const { page } = usePaginatedContactsList({ listId, initialPage })
   // TODO: add specific hook for columns definition
   const columns: ColumnDef<Contact>[] = [
     {
@@ -72,7 +68,7 @@ export function ContactsTable({
     },
   ]
 
-  if (totalCount === 0) {
+  if (page.totalCount === 0) {
     return (
       <div className='flex flex-col gap-2 flex-1 items-center justify-center'>
         <div className='flex flex-col gap-2 items-center justify-center'>
@@ -85,7 +81,7 @@ export function ContactsTable({
 
   return (
     <div className='flex flex-col gap-2 flex-1'>
-      <TableProvider data={initialContacts} columns={columns}>
+      <TableProvider data={page.contacts} columns={columns}>
         <TableHeader>
           {({ headerGroup }) => (
             <TableHeaderGroup headerGroup={headerGroup} key={headerGroup.id}>
