@@ -19,7 +19,11 @@ import {
   DropzoneEmptyState,
 } from '~/components/kibo-ui/dropzone'
 import { useImportContacts } from './import-contacts-provider'
-import { ColumnsSelector, type ColumnRoleOption } from './columns-selector'
+import {
+  ColumnsSelector,
+  type ColumnRoleOption,
+  REQUIRED_ROLES,
+} from './columns-selector'
 
 export function ImportContactsDialog({ listId }: { listId: string }) {
   const {
@@ -77,18 +81,23 @@ export function ImportContactsDialog({ listId }: { listId: string }) {
     (header: string, role: ColumnRoleOption['value'], index: number) => {
       if (scoped !== null) {
         const canonical = { ...scoped.columnMap.canonical }
-        const varying = [...scoped.columnMap.varying]
+        let varying = [...scoped.columnMap.varying]
+
+        for (const key of REQUIRED_ROLES) {
+          if (canonical[key].value === header) {
+            canonical[key] = { value: '', positionIndex: 0 }
+          }
+        }
+        varying = varying.filter((v) => v.value !== header)
 
         if (role === 'varying') {
           varying.push({ value: header, positionIndex: index })
-        } else {
-          if (role === 'email') {
-            canonical.email = { value: header, positionIndex: index }
-          } else if (role === 'first_name') {
-            canonical.first_name = { value: header, positionIndex: index }
-          } else if (role === 'last_name') {
-            canonical.last_name = { value: header, positionIndex: index }
-          }
+        } else if (role === 'email') {
+          canonical.email = { value: header, positionIndex: index }
+        } else if (role === 'first_name') {
+          canonical.first_name = { value: header, positionIndex: index }
+        } else if (role === 'last_name') {
+          canonical.last_name = { value: header, positionIndex: index }
         }
 
         setActiveContactImportColumnMapping({

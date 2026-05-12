@@ -66,7 +66,7 @@ const getColumnMapValue = (
   return 'varying'
 }
 
-const REQUIRED_ROLES: CanonicalContactField[] = [
+export const REQUIRED_ROLES: CanonicalContactField[] = [
   'email',
   'first_name',
   'last_name',
@@ -178,7 +178,10 @@ export function ColumnsSelector({
             </p>
           </div>
         </div>
-        <Button disabled={busy} onClick={onImportContacts}>
+        <Button
+          disabled={busy || !allRequiredRolesMapped}
+          onClick={onImportContacts}
+        >
           Import contacts
         </Button>
       </div>
