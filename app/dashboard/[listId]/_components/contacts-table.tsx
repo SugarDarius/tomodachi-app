@@ -80,9 +80,6 @@ export function ContactsTable({
       <div className='flex flex-col gap-2 flex-1 items-center justify-center'>
         <div className='flex flex-col gap-2 items-center justify-center'>
           <ContactIcon className='size-10' />
-          <p className='text-sm text-muted-foreground'>
-            No contacts found in this list.
-          </p>
           <ImportContactsButton listId={listId} />
         </div>
       </div>

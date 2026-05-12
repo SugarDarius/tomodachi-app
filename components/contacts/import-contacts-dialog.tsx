@@ -32,13 +32,10 @@ export function ImportContactsDialog({ listId }: { listId: string }) {
 
   const [open, setOpen] = useState(false)
 
-  const scoped = useMemo(
-    () =>
-      activeContactImport && activeContactImport.listId === listId
-        ? activeContactImport
-        : null,
-    [activeContactImport, listId]
-  )
+  const scoped =
+    activeContactImport && activeContactImport.listId === listId
+      ? activeContactImport
+      : null
 
   const busy = useMemo(
     () =>
@@ -114,7 +111,7 @@ export function ImportContactsDialog({ listId }: { listId: string }) {
       <SheetTrigger asChild>
         <Button variant='default'>
           <Upload className='size-4' />
-          Import new contacts
+          Import contacts
         </Button>
       </SheetTrigger>
       <SheetContent className='w-4xl! max-w-4xl!'>
@@ -144,7 +141,7 @@ export function ImportContactsDialog({ listId }: { listId: string }) {
           ) : (
             <>
               {scoped.step === 'reading_preview' ? (
-                <div className='flex items-center gap-2 text-muted-foreground text-sm'>
+                <div className='flex items-center gap-2 text-muted-foreground text-sm flex-1 justify-center'>
                   <Spinner data-icon='inline-start' />
                   Parsing preview…
                 </div>
