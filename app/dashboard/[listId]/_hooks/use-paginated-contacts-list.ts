@@ -8,7 +8,7 @@ import {
   string,
   flexDate,
   nullable,
-  unknown,
+  record,
 } from 'decoders'
 import { useState } from 'react'
 
@@ -28,7 +28,7 @@ const paginatedContactsListDecoder = object({
       emailNormalized: nullable(string),
       firstName: string,
       lastName: string,
-      varyingFields: unknown,
+      varyingFields: record(string, string),
       createdAt: flexDate,
       updatedAt: flexDate,
       deletedAt: nullable(flexDate),

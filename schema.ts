@@ -289,7 +289,10 @@ export const contacts = pgTable(
     /**
      * Optional JSON for varying fields not modeled as columns (phones, tags, etc.).
      */
-    varyingFields: jsonb('varying_fields').notNull().default({}),
+    varyingFields: jsonb('varying_fields')
+      .$type<Record<string, string>>()
+      .notNull()
+      .default({}),
     /**
      * The timestamp when the contact was updated.
      */
