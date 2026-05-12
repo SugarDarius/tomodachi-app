@@ -82,36 +82,43 @@ export function ContactsTable({
   return (
     <div className='flex flex-col gap-2 flex-1 overflow-hidden'>
       <div className='flex-1 overflow-hidden'>
-        <TableProvider
-          data={page.contacts}
-          columns={columns}
-          className='w-full h-full overflow-auto'
-        >
-          <TableHeader>
-            {({ headerGroup }) => (
-              <TableHeaderGroup headerGroup={headerGroup} key={headerGroup.id}>
-                {({ header }) => <TableHead header={header} key={header.id} />}
-              </TableHeaderGroup>
-            )}
-          </TableHeader>
-          <TableBody>
-            {({ row }) => (
-              <TableRow key={row.id} row={row} className='cursor-pointer'>
-                {({ cell }) => (
-                  <TableCell
-                    cell={cell}
-                    key={cell.id}
-                    className={cn({
-                      'text-right': cell.column.id === 'createdAt',
-                    })}
-                  />
-                )}
-              </TableRow>
-            )}
-          </TableBody>
-        </TableProvider>
+        <div className='w-full h-full overflow-auto'>
+          <TableProvider data={page.contacts} columns={columns}>
+            <TableHeader>
+              {({ headerGroup }) => (
+                <TableHeaderGroup
+                  headerGroup={headerGroup}
+                  key={headerGroup.id}
+                >
+                  {({ header }) => (
+                    <TableHead header={header} key={header.id} />
+                  )}
+                </TableHeaderGroup>
+              )}
+            </TableHeader>
+            <TableBody>
+              {({ row }) => (
+                <TableRow key={row.id} row={row} className='cursor-pointer'>
+                  {({ cell }) => (
+                    <TableCell
+                      cell={cell}
+                      key={cell.id}
+                      className={cn({
+                        'text-right': cell.column.id === 'createdAt',
+                      })}
+                    />
+                  )}
+                </TableRow>
+              )}
+            </TableBody>
+          </TableProvider>
+        </div>
       </div>
-      <div className='flex items-center justify-between p-4 flex-none'></div>
+      <div className='flex items-center justify-between p-4 flex-none border-t border-border'>
+        <span className='text-sm text-muted-foreground'>
+          {page.totalCount === 1 ? '1 contact' : `${page.totalCount} contacts`}
+        </span>
+      </div>
     </div>
   )
 }

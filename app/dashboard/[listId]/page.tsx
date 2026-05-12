@@ -72,7 +72,7 @@ export default async function Page({
           <Heading params={params} />
         </Suspense>
       </div>
-      <div className='flex flex-col gap-2 flex-1'>
+      <div className='flex flex-col gap-2 flex-1 overflow-hidden'>
         <Suspense fallback={<ContactsTableSkeleton />}>
           <ContactsTableSuspense params={params} />
         </Suspense>
