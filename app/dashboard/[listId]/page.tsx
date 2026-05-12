@@ -21,6 +21,10 @@ import {
   ContactsTableSkeleton,
 } from './_components/contacts-table'
 import { ImportContactsButton } from '~/components/contacts/import-contacts-button'
+import {
+  ContactsListAction,
+  ContactsListActionSkeleton,
+} from './_components/contacts-list-action'
 
 export default async function Page({
   params,
@@ -55,7 +59,12 @@ export default async function Page({
             </BreadcrumbItem>
           </BreadcrumbList>
         </Breadcrumb>
-        <ImportContactsButton listId={listId} />
+        <div className='flex items-center gap-2'>
+          <ImportContactsButton listId={listId} />
+          <Suspense fallback={<ContactsListActionSkeleton />}>
+            <ContactsListAction listId={listId} />
+          </Suspense>
+        </div>
       </div>
       <div className='flex flex-col gap-4 flex-none'>
         <Suspense fallback={<HeadingSkeleton />}>

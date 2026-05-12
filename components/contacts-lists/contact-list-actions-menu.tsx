@@ -16,17 +16,21 @@ import { DeleteContactListDialog } from './delete-contact-list-dialog'
 
 export function ContactListActionsMenu({
   list,
+  side = 'right',
+  align = 'start',
   children,
 }: {
   list: ContactsList
+  side?: React.ComponentProps<typeof DropdownMenuContent>['side']
+  align?: React.ComponentProps<typeof DropdownMenuContent>['align']
   children: React.ReactNode
 }) {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>{children}</DropdownMenuTrigger>
       <DropdownMenuContent
-        side='right'
-        align='start'
+        side={side}
+        align={align}
         className='min-w-40'
         onCloseAutoFocus={(event) => event.preventDefault()}
       >
