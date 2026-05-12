@@ -11,6 +11,7 @@ import {
   pgEnum,
   integer,
   bigint,
+  uniqueIndex,
 } from 'drizzle-orm/pg-core'
 
 /**
@@ -246,6 +247,13 @@ export const contacts = pgTable(
      */
     email: text('email').notNull(),
     /**
+     * The normalized email address of the contact.
+     * Generated for indexing and dedupe. Never set manually in inserts.
+     */
+    emailNormalized: text('email_normalized').generatedAlwaysAs(
+      sql`lower(trim(email))`
+    ),
+    /**
      * The first name of the contact.
      */
     firstName: text('first_name').notNull().default(''),
@@ -273,6 +281,10 @@ export const contacts = pgTable(
   (t) => [
     check('email_present', sql`length(trim(email)) > 0`),
     index('contacts_tenant_email_idx').on(t.tenantId, t.email),
+    uniqueIndex('contacts_tenant_email_normalized_uidx').on(
+      t.tenantId,
+      t.emailNormalized
+    ),
     index('contacts_tenant_created_idx').on(t.tenantId, t.createdAt.desc()),
   ]
 )

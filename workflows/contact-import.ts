@@ -270,6 +270,7 @@ async function flushContactImportBatch({
     return { committed: upsertedContacts.length }
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err)
+    console.error('message', message)
     return failWorkflow(`Failed to upsert contacts: ${message}`)
   }
 }

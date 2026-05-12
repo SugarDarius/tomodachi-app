@@ -1,0 +1,2 @@
+ALTER TABLE "contacts" ADD COLUMN "email_normalized" text GENERATED ALWAYS AS (lower(trim(email))) STORED;--> statement-breakpoint
+CREATE UNIQUE INDEX "contacts_tenant_email_normalized_uidx" ON "contacts" USING btree ("tenant_id","email_normalized");
