@@ -107,6 +107,7 @@ export const renameContactList = createSafeServerAction(
     }
 
     updateTag('contacts-lists')
+    updateTag(`contacts-list:${input.id}`)
   }
 )
 
