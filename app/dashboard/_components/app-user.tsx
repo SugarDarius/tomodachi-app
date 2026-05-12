@@ -5,6 +5,7 @@ import { useTheme } from 'next-themes'
 import { SignOutButton } from '~/components/auth/sign-out-button'
 
 import { cn } from '~/lib/utils'
+import { authClient } from '~/lib/auth/client'
 
 import { Avatar, AvatarFallback, AvatarImage } from '~/components/ui/avatar'
 import {
@@ -24,16 +25,19 @@ import {
 } from '~/components/ui/sidebar'
 import { GithubIcon } from '~/components/icons/github'
 
-export function AppUser({
-  user,
-}: {
-  user: {
-    name: string
-    email: string
-  }
-}) {
+const { useSession } = authClient
+
+export function AppUser() {
+  const { data } = useSession()
+
   const { isMobile } = useSidebar()
   const { theme, setTheme } = useTheme()
+
+  if (!data) {
+    return null
+  }
+
+  const user = data.user
 
   return (
     <SidebarMenu>

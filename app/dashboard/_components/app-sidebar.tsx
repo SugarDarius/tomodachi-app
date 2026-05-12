@@ -1,13 +1,6 @@
-'use client'
-
 import { Suspense } from 'react'
-import Link from 'next/link'
-import { AppLists } from './app-lists'
-import { usePathname } from 'next/navigation'
-import { Command, LayoutGrid } from 'lucide-react'
 
-import { authClient } from '~/lib/auth/client'
-import { type ContactsList } from '~/schema'
+import { Command } from 'lucide-react'
 
 import {
   Sidebar,
@@ -17,26 +10,17 @@ import {
   SidebarSeparator,
   SidebarMenu,
   SidebarMenuItem,
-  SidebarMenuButton,
   SidebarGroupLabel,
   SidebarGroup,
 } from '~/components/ui/sidebar'
 import { Skeleton } from '~/components/ui/skeleton'
 import { CreateContactListDialog } from '~/components/contacts-lists/create-contact-list-dialog'
 
+import { AppDashboardMenuButton } from './app-dashboard-menu-button'
+import { AppLists } from './app-lists'
 import { AppUser } from './app-user'
 
-const { useSession } = authClient
-
-export function AppSidebar({
-  getContactsListsPromise,
-  ...props
-}: React.ComponentProps<typeof Sidebar> & {
-  getContactsListsPromise: Promise<ContactsList[]>
-}) {
-  const { data } = useSession()
-  const pathname = usePathname()
-
+export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   return (
     <Sidebar variant='inset' {...props}>
       <SidebarHeader>
@@ -54,16 +38,7 @@ export function AppSidebar({
         <SidebarGroup>
           <SidebarMenu>
             <SidebarMenuItem>
-              <SidebarMenuButton
-                asChild
-                isActive={pathname === '/dashboard'}
-                className='data-active:bg-accent-foreground/10 transition-all duration-150 ease-in-out hover:bg-accent-foreground/10'
-              >
-                <Link href='/dashboard'>
-                  <LayoutGrid className='size-4' />
-                  dashboard
-                </Link>
-              </SidebarMenuButton>
+              <AppDashboardMenuButton />
             </SidebarMenuItem>
           </SidebarMenu>
         </SidebarGroup>
@@ -89,18 +64,11 @@ export function AppSidebar({
             </SidebarGroup>
           }
         >
-          <AppLists getContactsListsPromise={getContactsListsPromise} />
+          <AppLists />
         </Suspense>
       </SidebarContent>
       <SidebarFooter>
-        {data ? (
-          <AppUser
-            user={{
-              name: data.user.name,
-              email: data.user.email,
-            }}
-          />
-        ) : null}
+        <AppUser />
       </SidebarFooter>
     </Sidebar>
   )

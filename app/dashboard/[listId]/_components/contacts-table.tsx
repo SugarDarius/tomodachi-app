@@ -1,79 +1,20 @@
-'use client'
-
-import { use } from 'react'
-
-import { type Contact } from '~/schema'
-import {
-  type ColumnDef,
-  TableBody,
-  TableCell,
-  TableColumnHeader,
-  TableHead,
-  TableHeader,
-  TableHeaderGroup,
-  TableProvider,
-  TableRow,
-} from '~/components/kibo-ui/table'
-
-import { ContactsListMembersPage } from '../_lib/contacts-list'
-import { Skeleton } from '~/components/ui/skeleton'
-import { formatDateAsEnUs } from '~/utils/format-date'
 import { ContactIcon } from 'lucide-react'
+
+import { Skeleton } from '~/components/ui/skeleton'
 import { ImportContactsButton } from '~/components/contacts/import-contacts-button'
-import { cn } from '~/lib/utils'
+
+import { getContactsListMembers } from '../_lib/contacts-list'
+import { ContactsTableContent } from './contacts-table-content'
 
 export const ContactsTableSkeleton = () => <Skeleton className='w-full h-18' />
 
-export function ContactsTable({
-  listId,
-  getContactsListMembersPromise,
-}: {
-  listId: string
-  getContactsListMembersPromise: Promise<ContactsListMembersPage>
-}) {
-  const initialPage = use(getContactsListMembersPromise)
+export async function ContactsTable({ listId }: { listId: string }) {
+  const initialPage = await getContactsListMembers({ id: listId })
   // TODO: add client side hydration after initial page is loaded
 
   // TODO: add hook to handle pagination, sorting and filtering
 
   // TODO: add paginator component
-
-  // TODO: add specific hook for columns definition
-  const columns: ColumnDef<Contact>[] = [
-    {
-      id: 'email',
-      accessorKey: 'email',
-      header: ({ column }) => (
-        <TableColumnHeader column={column} title='Email' />
-      ),
-    },
-    {
-      id: 'firstName',
-      accessorKey: 'firstName',
-      header: ({ column }) => (
-        <TableColumnHeader column={column} title='First Name' />
-      ),
-    },
-    {
-      id: 'lastName',
-      accessorKey: 'lastName',
-      header: ({ column }) => (
-        <TableColumnHeader column={column} title='Last Name' />
-      ),
-    },
-    {
-      id: 'createdAt',
-      accessorKey: 'createdAt',
-      header: ({ column }) => (
-        <TableColumnHeader
-          column={column}
-          title='Created At'
-          className='justify-end'
-        />
-      ),
-      cell: ({ row }) => formatDateAsEnUs(row.original.createdAt),
-    },
-  ]
 
   if (initialPage.totalCount === 0) {
     return (
@@ -88,30 +29,7 @@ export function ContactsTable({
 
   return (
     <div className='flex flex-col gap-2 flex-1'>
-      <TableProvider data={initialPage.contacts} columns={columns}>
-        <TableHeader>
-          {({ headerGroup }) => (
-            <TableHeaderGroup headerGroup={headerGroup} key={headerGroup.id}>
-              {({ header }) => <TableHead header={header} key={header.id} />}
-            </TableHeaderGroup>
-          )}
-        </TableHeader>
-        <TableBody>
-          {({ row }) => (
-            <TableRow key={row.id} row={row}>
-              {({ cell }) => (
-                <TableCell
-                  cell={cell}
-                  key={cell.id}
-                  className={cn({
-                    'text-right': cell.column.id === 'createdAt',
-                  })}
-                />
-              )}
-            </TableRow>
-          )}
-        </TableBody>
-      </TableProvider>
+      <ContactsTableContent initialContacts={initialPage.contacts} />
     </div>
   )
 }

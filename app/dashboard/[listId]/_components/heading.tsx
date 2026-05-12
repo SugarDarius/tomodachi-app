@@ -1,10 +1,7 @@
-'use client'
-
-import { use } from 'react'
-
-import { ContactsList } from '~/schema'
 import { capitalize } from '~/utils/chars'
 import { Skeleton } from '~/components/ui/skeleton'
+
+import { getContactsList } from '../_lib/contacts-list'
 
 export const HeadingSkeleton = () => (
   <div className='flex flex-col'>
@@ -13,12 +10,8 @@ export const HeadingSkeleton = () => (
   </div>
 )
 
-export function Heading({
-  getContactsListPromise,
-}: {
-  getContactsListPromise: Promise<ContactsList | null>
-}) {
-  const list = use(getContactsListPromise)
+export async function Heading({ listId }: { listId: string }) {
+  const list = await getContactsList({ id: listId })
 
   if (list === null) {
     return null

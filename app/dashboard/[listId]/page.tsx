@@ -14,7 +14,7 @@ import {
   BreadcrumbItemName,
   BreadcrumbItemNameSkeleton,
 } from './_components/breadcrumb-item-name'
-import { getContactsList, getContactsListMembers } from './_lib/contacts-list'
+
 import { HeadingSkeleton, Heading } from './_components/heading'
 import {
   ContactsTable,
@@ -50,9 +50,7 @@ export default async function Page({
             <BreadcrumbSeparator />
             <BreadcrumbItem>
               <Suspense fallback={<BreadcrumbItemNameSkeleton />}>
-                <BreadcrumbItemName
-                  getContactsListPromise={getContactsList({ id: listId })}
-                />
+                <BreadcrumbItemName listId={listId} />
               </Suspense>
             </BreadcrumbItem>
           </BreadcrumbList>
@@ -61,17 +59,12 @@ export default async function Page({
       </div>
       <div className='flex flex-col gap-4 flex-none'>
         <Suspense fallback={<HeadingSkeleton />}>
-          <Heading getContactsListPromise={getContactsList({ id: listId })} />
+          <Heading listId={listId} />
         </Suspense>
       </div>
       <div className='flex flex-col gap-2 flex-1'>
         <Suspense fallback={<ContactsTableSkeleton />}>
-          <ContactsTable
-            listId={listId}
-            getContactsListMembersPromise={getContactsListMembers({
-              id: listId,
-            })}
-          />
+          <ContactsTable listId={listId} />
         </Suspense>
       </div>
     </div>

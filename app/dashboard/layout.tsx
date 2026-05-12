@@ -3,7 +3,6 @@ import { ImportContactsProvider } from '~/components/contacts/import-contacts-pr
 import { RealtimeProvider } from './_providers/realtime-provider'
 import { SidebarInset, SidebarProvider } from '~/components/ui/sidebar'
 
-import { getContactsLists } from './_lib/contacts-lists'
 import { AppSidebar } from './_components/app-sidebar'
 
 export default function Layout({ children }: { children: React.ReactNode }) {
@@ -12,7 +11,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
       <ImportContactsProvider>
         <div className='flex flex-row h-screen w-screen'>
           <SidebarProvider>
-            <AppSidebar getContactsListsPromise={getContactsLists()} />
+            <AppSidebar />
             <SidebarInset className='overflow-y-auto'>{children}</SidebarInset>
           </SidebarProvider>
         </div>
