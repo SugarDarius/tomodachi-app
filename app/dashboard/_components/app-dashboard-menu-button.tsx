@@ -2,10 +2,14 @@
 
 import { usePathname } from 'next/navigation'
 import Link from 'next/link'
-
 import { LayoutGrid } from 'lucide-react'
 
+import { Skeleton } from '~/components/ui/skeleton'
 import { SidebarMenuButton } from '~/components/ui/sidebar'
+
+export const AppDashboardMenuButtonSkeleton = () => (
+  <Skeleton className='w-full h-8 rounded-md' />
+)
 
 export function AppDashboardMenuButton() {
   const pathname = usePathname()

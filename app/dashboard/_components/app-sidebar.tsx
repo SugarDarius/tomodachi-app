@@ -16,7 +16,10 @@ import {
 import { Skeleton } from '~/components/ui/skeleton'
 import { CreateContactListDialog } from '~/components/contacts-lists/create-contact-list-dialog'
 
-import { AppDashboardMenuButton } from './app-dashboard-menu-button'
+import {
+  AppDashboardMenuButtonSkeleton,
+  AppDashboardMenuButton,
+} from './app-dashboard-menu-button'
 import { AppLists } from './app-lists'
 import { AppUser } from './app-user'
 
@@ -38,7 +41,9 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <SidebarGroup>
           <SidebarMenu>
             <SidebarMenuItem>
-              <AppDashboardMenuButton />
+              <Suspense fallback={<AppDashboardMenuButtonSkeleton />}>
+                <AppDashboardMenuButton />
+              </Suspense>
             </SidebarMenuItem>
           </SidebarMenu>
         </SidebarGroup>
