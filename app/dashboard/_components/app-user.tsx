@@ -22,6 +22,7 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from '~/components/ui/sidebar'
+import { GithubIcon } from '~/components/icons/github'
 
 export function AppUser({
   user,
@@ -128,6 +129,16 @@ export function AppUser({
                   theme !== 'system' && 'text-transparent'
                 )}
               />
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem asChild>
+              <a
+                href='https://github.com/SugarDarius/tomodachi-app'
+                target='_blank'
+              >
+                <GithubIcon className='size-4' />
+                See on GitHub
+              </a>
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem asChild>

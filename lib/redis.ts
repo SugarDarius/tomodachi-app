@@ -1,5 +1,3 @@
-import '~/lib/event-target-polyfill'
-
 import { Redis } from '@upstash/redis'
 
 import { env } from '~/env'
