@@ -20,6 +20,12 @@ const getCanonicalAccessorKey = (key: CanonicalContactField) => {
       : 'lastName'
 }
 
+/**
+ *  Builds dynamically the columns for the contacts table
+ *  based on the column map.
+ *
+ * Users see the columns ordering than in their original CSV file.
+ */
 export function useDynamicColumns({ columnMap }: { columnMap: ColumnMapping }) {
   return useMemo(() => {
     const { canonical, varying } = columnMap
