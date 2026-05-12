@@ -1,4 +1,6 @@
 import 'server-only'
+import { cacheTag } from 'next/cache'
+
 import { count, desc, eq, getTableColumns, isNull, and } from 'drizzle-orm'
 
 import { db } from '~/lib/db'
@@ -18,6 +20,9 @@ export async function getContactsList({
 }: {
   id: string
 }): Promise<ContactsList | null> {
+  'use cache'
+  cacheTag(`contacts-list:${id}`)
+
   const list = await db
     .select()
     .from(contactsLists)
@@ -52,6 +57,9 @@ export async function getContactsListMembers({
   page?: number
   pageSize?: number
 }): Promise<ContactsListMembersPage> {
+  'use cache'
+  cacheTag(`contacts-list-members:${id}:page=${page}:pageSize=${pageSize}`)
+
   const $page = Math.max(1, Math.floor(page))
   const $pageSize = Math.min(MAX_PAGE_SIZE, Math.max(1, Math.floor(pageSize)))
 

@@ -1,6 +1,6 @@
 'use server'
 
-import { revalidatePath } from 'next/cache'
+import { updateTag } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { and, eq, isNull } from 'drizzle-orm'
 import { object, string } from 'decoders'
@@ -49,7 +49,7 @@ export const createContactList = createSafeServerAction(
       })
     }
 
-    revalidatePath('/dashboard', 'layout')
+    updateTag('contacts-lists')
     redirect(`/dashboard/${result[0].insertedId}`)
   }
 )
@@ -106,7 +106,7 @@ export const renameContactList = createSafeServerAction(
       })
     }
 
-    revalidatePath('/dashboard', 'layout')
+    updateTag('contacts-lists')
   }
 )
 
@@ -155,7 +155,7 @@ export const deleteContactList = createSafeServerAction(
       })
     }
 
-    revalidatePath('/dashboard', 'layout')
+    updateTag('contacts-lists')
     redirect('/dashboard')
   }
 )
