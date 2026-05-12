@@ -1,5 +1,7 @@
 'use client'
 
+import { ContactIcon } from 'lucide-react'
+
 import { type Contact } from '~/schema'
 
 import { formatDateAsEnUs } from '~/utils/format-date'
@@ -16,12 +18,23 @@ import {
   TableProvider,
   TableRow,
 } from '~/components/kibo-ui/table'
+import { ImportContactsButton } from '~/components/contacts/import-contacts-button'
+
+import { type ContactsListMembersPage } from '../_lib/contacts-list'
 
 export function ContactsTableContent({
-  initialContacts,
+  listId,
+  initialPage,
 }: {
-  initialContacts: Contact[]
+  listId: string
+  initialPage: ContactsListMembersPage
 }) {
+  const { totalCount, contacts: initialContacts } = initialPage
+  // TODO: add client side hydration after initial page is loaded
+
+  // TODO: add hook to handle pagination, sorting and filtering
+
+  // TODO: add paginator component
   // TODO: add specific hook for columns definition
   const columns: ColumnDef<Contact>[] = [
     {
@@ -59,30 +72,43 @@ export function ContactsTableContent({
     },
   ]
 
+  if (totalCount === 0) {
+    return (
+      <div className='flex flex-col gap-2 flex-1 items-center justify-center'>
+        <div className='flex flex-col gap-2 items-center justify-center'>
+          <ContactIcon className='size-10' />
+          <ImportContactsButton listId={listId} />
+        </div>
+      </div>
+    )
+  }
+
   return (
-    <TableProvider data={initialContacts} columns={columns}>
-      <TableHeader>
-        {({ headerGroup }) => (
-          <TableHeaderGroup headerGroup={headerGroup} key={headerGroup.id}>
-            {({ header }) => <TableHead header={header} key={header.id} />}
-          </TableHeaderGroup>
-        )}
-      </TableHeader>
-      <TableBody>
-        {({ row }) => (
-          <TableRow key={row.id} row={row}>
-            {({ cell }) => (
-              <TableCell
-                cell={cell}
-                key={cell.id}
-                className={cn({
-                  'text-right': cell.column.id === 'createdAt',
-                })}
-              />
-            )}
-          </TableRow>
-        )}
-      </TableBody>
-    </TableProvider>
+    <div className='flex flex-col gap-2 flex-1'>
+      <TableProvider data={initialContacts} columns={columns}>
+        <TableHeader>
+          {({ headerGroup }) => (
+            <TableHeaderGroup headerGroup={headerGroup} key={headerGroup.id}>
+              {({ header }) => <TableHead header={header} key={header.id} />}
+            </TableHeaderGroup>
+          )}
+        </TableHeader>
+        <TableBody>
+          {({ row }) => (
+            <TableRow key={row.id} row={row}>
+              {({ cell }) => (
+                <TableCell
+                  cell={cell}
+                  key={cell.id}
+                  className={cn({
+                    'text-right': cell.column.id === 'createdAt',
+                  })}
+                />
+              )}
+            </TableRow>
+          )}
+        </TableBody>
+      </TableProvider>
+    </div>
   )
 }
