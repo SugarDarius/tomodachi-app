@@ -1,8 +1,8 @@
 'use client'
 
-import { useActionState } from 'react'
-import { Plus } from 'lucide-react'
+import { useActionState, useState } from 'react'
 
+import { type ContactsList } from '~/schema'
 import { Button } from '~/components/ui/button'
 import {
   Dialog,
@@ -18,38 +18,50 @@ import { Field, FieldGroup } from '~/components/ui/field'
 import { Input } from '~/components/ui/input'
 import { Label } from '~/components/ui/label'
 
-import { createContactList, type CreateContactListResult } from './actions'
+import { renameContactList, type RenameContactListResult } from './actions'
 
-export function CreateContactListDialog({
-  triggerVariant = 'outline',
+export function RenameContactListDialog({
+  list,
+  children,
 }: {
-  triggerVariant?: React.ComponentProps<typeof Button>['variant']
+  list: ContactsList
+  children: React.ReactNode
 }) {
+  const [open, setOpen] = useState(false)
   const [, formAction, isPending] = useActionState<
-    CreateContactListResult | null,
+    RenameContactListResult | null,
     FormData
-  >(async (_prevState, formData) => createContactList(formData), null)
+  >(async (_prevState, formData) => {
+    const result = await renameContactList(formData)
+    if (result?.success) {
+      setOpen(false)
+    }
+    return result
+  }, null)
 
   return (
-    <Dialog>
-      <DialogTrigger asChild>
-        <Button variant={triggerVariant} className='justify-start'>
-          <Plus className='size-4' />
-          New contacts list
-        </Button>
-      </DialogTrigger>
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>{children}</DialogTrigger>
       <DialogContent className='sm:max-w-sm'>
         <form action={formAction} className='space-y-4'>
+          <input type='hidden' name='id' value={list.id} />
           <DialogHeader>
-            <DialogTitle>Create a new contact list</DialogTitle>
+            <DialogTitle>Rename contact list</DialogTitle>
             <DialogDescription>
-              Create a new list where you can import contacts from a CSV file.
+              Choose a new name for this contact list.
             </DialogDescription>
           </DialogHeader>
           <FieldGroup>
             <Field>
               <Label htmlFor='name'>Name</Label>
-              <Input id='name' name='name' placeholder='prospects' required />
+              <Input
+                id='name'
+                name='name'
+                placeholder='prospects'
+                defaultValue={list.name}
+                required
+                autoFocus
+              />
             </Field>
           </FieldGroup>
           <DialogFooter className='border-0'>
@@ -59,7 +71,7 @@ export function CreateContactListDialog({
               </Button>
             </DialogClose>
             <Button type='submit' disabled={isPending}>
-              Create
+              Rename
             </Button>
           </DialogFooter>
         </form>

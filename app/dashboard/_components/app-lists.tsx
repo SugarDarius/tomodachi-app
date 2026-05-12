@@ -3,7 +3,7 @@
 import { use } from 'react'
 import { usePathname } from 'next/navigation'
 import Link from 'next/link'
-import { Contact2 } from 'lucide-react'
+import { Contact2, MoreHorizontal } from 'lucide-react'
 
 import { type ContactsList } from '~/schema'
 import { capitalize } from '~/utils/chars'
@@ -11,9 +11,11 @@ import {
   SidebarGroup,
   SidebarGroupLabel,
   SidebarMenu,
+  SidebarMenuAction,
   SidebarMenuButton,
   SidebarMenuItem,
 } from '~/components/ui/sidebar'
+import { ContactListActionsMenu } from '~/components/contacts-lists/contact-list-actions-menu'
 
 export function AppLists({
   getContactsListsPromise,
@@ -39,6 +41,14 @@ export function AppLists({
                 {capitalize(list.name)}
               </Link>
             </SidebarMenuButton>
+            <ContactListActionsMenu list={list}>
+              <SidebarMenuAction
+                showOnHover
+                aria-label={`Open actions menu for ${list.name}`}
+              >
+                <MoreHorizontal />
+              </SidebarMenuAction>
+            </ContactListActionsMenu>
           </SidebarMenuItem>
         ))}
       </SidebarMenu>
