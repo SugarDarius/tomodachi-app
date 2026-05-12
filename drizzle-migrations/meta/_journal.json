@@ -43,6 +43,13 @@
       "when": 1778568183688,
       "tag": "0005_handy_domino",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1778607264502,
+      "tag": "0006_bumpy_the_hood",
+      "breakpoints": true
     }
   ]
 }

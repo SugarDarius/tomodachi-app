@@ -36,6 +36,31 @@ export const contactsLists = pgTable(
      */
     name: text('name').notNull(),
     /**
+     * Mapping of CSV headers to the canonical and varying fields in the contacts table.
+     * @example
+     * {
+     *  "canonical": {
+     *    "email": "email",
+     *    "first_name": "firstName",
+     *    "last_name": "lastName",
+     *  },
+     *  "varying": ["company", "phone"]
+     * }
+     * 👉🏻 stored to render dynamically the table columns based on the column map
+     * in the contact's table UI
+     */
+    columnMap: jsonb('column_map')
+      .$type<ColumnMapping>()
+      .notNull()
+      .default({
+        canonical: {
+          email: { value: 'email', positionIndex: 0 },
+          first_name: { value: 'firstName', positionIndex: 1 },
+          last_name: { value: 'lastName', positionIndex: 2 },
+        },
+        varying: [],
+      }),
+    /**
      * When the list was created.
      */
     createdAt: timestamp('created_at').notNull().defaultNow(),

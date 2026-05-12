@@ -1,0 +1,1 @@
+ALTER TABLE "contacts_lists" ADD COLUMN "column_map" jsonb DEFAULT '{"canonical":{"email":{"value":"email","positionIndex":0},"first_name":{"value":"firstName","positionIndex":1},"last_name":{"value":"lastName","positionIndex":2}},"varying":[]}'::jsonb NOT NULL;
