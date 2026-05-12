@@ -47,6 +47,7 @@ export type ContactsListMembersPage = {
   totalCount: number
   pageIndex: number
   pageSize: number
+  totalPages: number
   canGoNext: boolean
   canGoPrevious: boolean
 }
@@ -100,6 +101,7 @@ export async function getContactsListMembersPaginated({
     totalCount,
     pageIndex: $pageIndex,
     canGoNext: $pageIndex * $pageSize < totalCount,
+    totalPages: Math.ceil(totalCount / $pageSize),
     canGoPrevious: $pageIndex > 1,
     pageSize: $pageSize,
   }

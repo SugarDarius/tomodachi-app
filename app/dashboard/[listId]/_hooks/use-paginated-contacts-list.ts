@@ -45,6 +45,7 @@ const paginatedContactsListDecoder = object({
   totalCount: number,
   pageIndex: number,
   pageSize: number,
+  totalPages: number,
   canGoNext: boolean,
   canGoPrevious: boolean,
 }).refineType<ContactsListMembersPage>()

@@ -84,6 +84,9 @@ export function ContactsTable({
           {page.totalCount === 1
             ? '1 contact'
             : `${formatNumberWithCommas(page.totalCount)} contacts`}
+          {page.totalPages > 1
+            ? ` in ${formatNumberWithCommas(page.totalPages)} pages`
+            : ''}
         </span>
         <div className='flex items-center gap-2'>
           <Button onClick={handlePrevious} size='sm' disabled={!canGoPrevious}>
