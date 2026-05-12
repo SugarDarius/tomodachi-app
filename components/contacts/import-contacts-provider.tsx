@@ -424,11 +424,13 @@ export function ImportContactsProvider({
         return false
       }
 
-      return (
-        activeContactImport.step === 'uploading_blob' ||
-        activeContactImport.step === 'registering_job' ||
-        activeContactImport.step === 'streaming_progress'
-      )
+      return [
+        'reading_preview',
+        'mapping',
+        'uploading_blob',
+        'registering_job',
+        'streaming_progress',
+      ].includes(activeContactImport.step)
     },
     [activeContactImport]
   )
