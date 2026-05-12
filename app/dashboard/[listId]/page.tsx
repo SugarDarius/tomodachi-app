@@ -17,9 +17,9 @@ import {
 
 import { HeadingSkeleton, Heading } from './_components/heading'
 import {
-  ContactsTable,
+  ContactsTableSuspense,
   ContactsTableSkeleton,
-} from './_components/contacts-table'
+} from './_components/contacts-table-suspense'
 import { ImportContactsButtonSuspense } from '~/components/contacts/import-contact-button-suspense'
 
 import {
@@ -74,7 +74,7 @@ export default async function Page({
       </div>
       <div className='flex flex-col gap-2 flex-1'>
         <Suspense fallback={<ContactsTableSkeleton />}>
-          <ContactsTable params={params} />
+          <ContactsTableSuspense params={params} />
         </Suspense>
       </div>
     </div>
