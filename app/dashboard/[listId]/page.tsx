@@ -33,7 +33,7 @@ export default async function Page({
   params: Promise<{ listId: string }>
 }) {
   return (
-    <div className='flex flex-col gap-4 p-4 min-h-full'>
+    <div className='flex flex-col gap-4 p-4 h-full max-h-full overflow-hidden'>
       <div className='flex items-center justify-between flex-none'>
         <Breadcrumb>
           <BreadcrumbList>

@@ -1,6 +1,15 @@
 'use client'
 
-import { object, array, unknown, number, boolean } from 'decoders'
+import {
+  object,
+  array,
+  number,
+  boolean,
+  string,
+  flexDate,
+  nullable,
+  unknown,
+} from 'decoders'
 import { useState } from 'react'
 
 import { type Contact } from '~/schema'
@@ -9,6 +18,28 @@ import { useSafeSWR } from '~/hooks/use-safe-swr'
 import { type ContactsListMembersPage } from '../_lib/contacts-list'
 
 import { DEFAULT_PAGE_INDEX, DEFAULT_PAGE_SIZE } from '../_lib/constants'
+
+const paginatedContactsListDecoder = object({
+  contacts: array(
+    object({
+      id: string,
+      tenantId: string,
+      email: string,
+      emailNormalized: nullable(string),
+      firstName: string,
+      lastName: string,
+      varyingFields: unknown,
+      createdAt: flexDate,
+      updatedAt: flexDate,
+      deletedAt: nullable(flexDate),
+    })
+  ).refineType<Contact[]>(),
+  totalCount: number,
+  pageIndex: number,
+  pageSize: number,
+  canGoNext: boolean,
+  canGoPrevious: boolean,
+}).refineType<ContactsListMembersPage>()
 
 export function usePaginatedContactsList({
   listId,
@@ -20,16 +51,10 @@ export function usePaginatedContactsList({
   initialPageIndex?: number
 }) {
   const [pageIndex, setPageIndex] = useState(initialPageIndex)
+
   const { data: page, error } = useSafeSWR<ContactsListMembersPage>(
     `/api/contacts/get/${listId}?pageIndex=${pageIndex}&pageSize=${DEFAULT_PAGE_SIZE}`,
-    object({
-      contacts: array(unknown).refineType<Contact[]>(),
-      totalCount: number,
-      pageIndex: number,
-      pageSize: number,
-      canGoNext: boolean,
-      canGoPrevious: boolean,
-    }).refineType<ContactsListMembersPage>(),
+    paginatedContactsListDecoder,
     {
       initialData: initialPage,
       revalidateOnFocus: true,

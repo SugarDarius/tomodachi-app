@@ -61,9 +61,6 @@ export async function getContactsListMembersPaginated({
   pageIndex?: number
   pageSize?: number
 }): Promise<ContactsListMembersPage> {
-  'use cache'
-  cacheTag(`contacts-list-members:${id}:page=${pageIndex}:pageSize=${pageSize}`)
-
   const $pageIndex = Math.max(1, Math.floor(pageIndex))
   const $pageSize = Math.min(MAX_PAGE_SIZE, Math.max(1, Math.floor(pageSize)))
 
