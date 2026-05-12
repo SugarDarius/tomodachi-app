@@ -8,6 +8,8 @@ export type PreviewResult = {
   sampleBytes: number
   /** Non-empty rows successfully parsed from the slice (= `sampleRows.length` after filtering). */
   sampleRowCount: number
+  /** The file name of the user-selected File. */
+  fileName: string
 }
 
 export type CreateContactImportResponseBody = {

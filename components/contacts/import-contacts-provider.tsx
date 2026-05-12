@@ -229,6 +229,7 @@ export function ImportContactsProvider({
           fileSizeBytes: file.size,
           sampleBytes: 0,
           sampleRowCount: 0,
+          fileName: file.name,
         },
         columnMap: {
           canonical: {
@@ -265,6 +266,7 @@ export function ImportContactsProvider({
             fileSizeBytes: file.size,
             sampleBytes: 0,
             sampleRowCount: 0,
+            fileName: file.name,
           },
           columnMap: {
             canonical: {

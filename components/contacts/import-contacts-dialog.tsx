@@ -1,17 +1,14 @@
 'use client'
 
 import { useState, useMemo, useCallback } from 'react'
-import { Upload, FileWarning } from 'lucide-react'
+import { Upload } from 'lucide-react'
 
 import { Button } from '~/components/ui/button'
 import { Spinner } from '~/components/ui/spinner'
-import { Label } from '~/components/ui/label'
 import {
   Sheet,
-  SheetClose,
   SheetContent,
   SheetDescription,
-  SheetFooter,
   SheetHeader,
   SheetTitle,
   SheetTrigger,
@@ -22,42 +19,7 @@ import {
   DropzoneEmptyState,
 } from '~/components/kibo-ui/dropzone'
 import { useImportContacts } from './import-contacts-provider'
-import { type ColumnMapping } from '~/schema'
-
-type RoleOption = {
-  value: 'email' | 'first_name' | 'last_name' | 'varying'
-  label: string
-}
-const ROLE_OPTIONS: RoleOption[] = [
-  { value: 'email', label: 'Email' },
-  { value: 'first_name', label: 'First name' },
-  { value: 'last_name', label: 'Last name' },
-  { value: 'varying', label: 'Additional' },
-]
-
-/**
- * Returns the role value of a column mapping for a given header.
- */
-const getColumnMapValue = (
-  columnMap: ColumnMapping,
-  header: string
-): RoleOption['value'] => {
-  const { canonical, varying } = columnMap
-  if (canonical.email.value === header) {
-    return 'email'
-  }
-  if (canonical.first_name.value === header) {
-    return 'first_name'
-  }
-  if (canonical.last_name.value === header) {
-    return 'last_name'
-  }
-  if (varying.some((v) => v.value === header)) {
-    return 'varying'
-  }
-
-  return 'varying'
-}
+import { ColumnsSelector, type ColumnRoleOption } from './columns-selector'
 
 export function ImportContactsDialog({ listId }: { listId: string }) {
   const {
@@ -115,7 +77,7 @@ export function ImportContactsDialog({ listId }: { listId: string }) {
   )
 
   const updateRole = useCallback(
-    (header: string, role: RoleOption['value'], index: number) => {
+    (header: string, role: ColumnRoleOption['value'], index: number) => {
       if (scoped !== null) {
         const canonical = { ...scoped.columnMap.canonical }
         const varying = [...scoped.columnMap.varying]
@@ -162,7 +124,7 @@ export function ImportContactsDialog({ listId }: { listId: string }) {
             Import new contacts from a CSV file.
           </SheetDescription>
         </SheetHeader>
-        <div className='flex flex-col gap-2 p-4 flex-1'>
+        <div className='flex flex-col gap-2 p-4 flex-1 overflow-hidden'>
           {scoped === null ? (
             <div className='flex flex-1 justify-center items-center'>
               <Dropzone
@@ -190,117 +152,17 @@ export function ImportContactsDialog({ listId }: { listId: string }) {
 
               {scoped.step === 'mapping' ||
               scoped.step === 'reading_preview' ? (
-                <div className='flex flex-col gap-2'>
-                  <p className='text-xs text-muted-foreground'>
-                    File size{' '}
-                    {(scoped.preview.fileSizeBytes / (1024 * 1024)).toFixed(2)}{' '}
-                    MB · showing first {scoped.preview.sampleRows.length}{' '}
-                    preview rows.
-                  </p>
-                  <div className='flex flex-col gap-2'>
-                    <Label className='text-xs uppercase tracking-wide'>
-                      Column mapping
-                    </Label>
-                    <p className='text-xs text-muted-foreground'>
-                      Map the columns of the CSV file to the contact fields.
-                      <br />
-                      <span className='text-destructive inline-flex items-center gap-0.5'>
-                        <FileWarning className='size-4' />
-                        The email, first_name, and last_name columns are
-                        required.
-                        <br />
-                        <span className='text-muted-foreground text-xs'>
-                          The varying column is used to map additional columns
-                          to the contact fields.
-                        </span>
-                      </span>
-                    </p>
-                    <div className='flex flex-col gap-2'>
-                      {scoped.preview.headers.map((header, index) => (
-                        <div
-                          key={header}
-                          className='grid grid-cols-1 sm:grid-cols-[1fr_220px] gap-2 items-center'
-                        >
-                          <span
-                            className='truncate font-mono text-xs'
-                            title={header}
-                          >
-                            {header || '(unmapped column)'}
-                          </span>
-                          <select
-                            className='border-input bg-background text-foreground h-9 rounded-md border px-2 text-sm'
-                            value={getColumnMapValue(scoped.columnMap, header)}
-                            onChange={(e) =>
-                              updateRole(
-                                header,
-                                e.target.value as RoleOption['value'],
-                                index
-                              )
-                            }
-                          >
-                            {ROLE_OPTIONS.map((opt) => (
-                              <option key={opt.value} value={opt.value}>
-                                {opt.label}
-                              </option>
-                            ))}
-                          </select>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-
-                  <div className='rounded-md border overflow-x-auto max-h-56 overflow-y-auto'>
-                    <table className='w-full text-xs'>
-                      <thead className='bg-muted sticky top-0'>
-                        <tr>
-                          {scoped.preview.headers.map((h, colIdx) => (
-                            <th
-                              key={`${colIdx}:${h}`}
-                              className='px-2 py-1 text-left font-medium'
-                            >
-                              {h}
-                            </th>
-                          ))}
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {scoped.preview.sampleRows
-                          .slice(0, 10)
-                          .map((row, idx) => (
-                            <tr key={idx} className='border-t'>
-                              {scoped.preview.headers.map((h, colIdx) => (
-                                <td
-                                  key={`${colIdx}:${h}`}
-                                  className='px-2 py-1 whitespace-nowrap'
-                                >
-                                  {row[h] ?? ''}
-                                </td>
-                              ))}
-                            </tr>
-                          ))}
-                      </tbody>
-                    </table>
-                  </div>
-
-                  {scoped.step === 'mapping' ? (
-                    <div className='flex justify-end'>
-                      <Button onClick={handleSubmit} disabled={busy}>
-                        Start import
-                      </Button>
-                    </div>
-                  ) : null}
-                </div>
+                <ColumnsSelector
+                  busy={busy}
+                  preview={scoped.preview}
+                  columnMap={scoped.columnMap}
+                  updateColumnRole={updateRole}
+                  onImportContacts={handleSubmit}
+                />
               ) : null}
             </>
           )}
         </div>
-        <SheetFooter className='border-0'>
-          <SheetClose asChild>
-            <Button type='button' variant='outline'>
-              Close
-            </Button>
-          </SheetClose>
-        </SheetFooter>
       </SheetContent>
     </Sheet>
   )

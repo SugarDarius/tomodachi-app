@@ -44,5 +44,6 @@ export async function previewCsvHead(file: File): Promise<PreviewResult> {
     fileSizeBytes: file.size,
     sampleBytes: new TextEncoder().encode(safeText).length,
     sampleRowCount: usableRows.length,
+    fileName: file.name,
   }
 }
