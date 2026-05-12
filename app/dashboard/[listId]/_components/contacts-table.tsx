@@ -1,10 +1,11 @@
 'use client'
 
-import { ContactIcon } from 'lucide-react'
+import { ContactIcon, ArrowLeft, ArrowRight } from 'lucide-react'
 
 import { type Contact } from '~/schema'
 
 import { formatDateAsEnUs } from '~/utils/format-date'
+import { formatNumberWithCommas } from '~/utils/format-number'
 import { cn } from '~/lib/utils'
 
 import {
@@ -18,6 +19,7 @@ import {
   TableProvider,
   TableRow,
 } from '~/components/kibo-ui/table'
+import { Button } from '~/components/ui/button'
 import { ImportContactsButton } from '~/components/contacts/import-contacts-button'
 
 import { type ContactsListMembersPage } from '../_lib/contacts-list'
@@ -30,7 +32,8 @@ export function ContactsTable({
   listId: string
   initialPage: ContactsListMembersPage
 }) {
-  const { page } = usePaginatedContactsList({ listId, initialPage })
+  const { page, handlePrevious, handleNext, canGoPrevious, canGoNext } =
+    usePaginatedContactsList({ listId, initialPage })
   // TODO: add specific hook for columns definition
   const columns: ColumnDef<Contact>[] = [
     {
@@ -116,8 +119,18 @@ export function ContactsTable({
       </div>
       <div className='flex items-center justify-between p-4 flex-none border-t border-border'>
         <span className='text-sm text-muted-foreground'>
-          {page.totalCount === 1 ? '1 contact' : `${page.totalCount} contacts`}
+          {page.totalCount === 1
+            ? '1 contact'
+            : `${formatNumberWithCommas(page.totalCount)} contacts`}
         </span>
+        <div className='flex items-center gap-2'>
+          <Button onClick={handlePrevious} size='sm' disabled={!canGoPrevious}>
+            <ArrowLeft className='size-4' />
+          </Button>
+          <Button onClick={handleNext} size='sm' disabled={!canGoNext}>
+            <ArrowRight className='size-4' />
+          </Button>
+        </div>
       </div>
     </div>
   )

@@ -79,5 +79,7 @@ export function usePaginatedContactsList({
     page,
     handleNext,
     handlePrevious,
+    canGoNext: page.canGoNext,
+    canGoPrevious: page.canGoPrevious,
   }
 }
