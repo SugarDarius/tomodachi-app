@@ -5,6 +5,7 @@ import { ContactIcon, ArrowLeft, ArrowRight } from 'lucide-react'
 import { formatNumberWithCommas } from '~/utils/format-number'
 import { cn } from '~/lib/utils'
 
+import { TableCell as TableCellRaw } from '~/components/ui/table'
 import {
   TableBody,
   TableCell,
@@ -21,6 +22,7 @@ import { type ContactsListMembersPage } from '../_lib/contacts-list'
 
 import { usePaginatedContactsList } from '../_hooks/use-paginated-contacts-list'
 import { useDynamicColumns } from '../_hooks/use-dynamic-columns'
+import { Checkbox } from '~/components/ui/checkbox'
 
 export function ContactsTable({
   listId,
@@ -64,15 +66,21 @@ export function ContactsTable({
             <TableBody>
               {({ row }) => (
                 <TableRow key={row.id} row={row} className='cursor-pointer'>
-                  {({ cell }) => (
-                    <TableCell
-                      cell={cell}
-                      key={cell.id}
-                      className={cn({
-                        'text-right': cell.column.id === 'updatedAt',
-                      })}
-                    />
-                  )}
+                  {({ cell }) =>
+                    cell.column.id === 'actions' ? (
+                      <TableCellRaw key={cell.id}>
+                        <Checkbox />
+                      </TableCellRaw>
+                    ) : (
+                      <TableCell
+                        cell={cell}
+                        key={cell.id}
+                        className={cn({
+                          'text-right': cell.column.id === 'updatedAt',
+                        })}
+                      />
+                    )
+                  }
                 </TableRow>
               )}
             </TableBody>
