@@ -425,8 +425,6 @@ export function ImportContactsProvider({
       }
 
       return [
-        'reading_preview',
-        'mapping',
         'uploading_blob',
         'registering_job',
         'streaming_progress',
