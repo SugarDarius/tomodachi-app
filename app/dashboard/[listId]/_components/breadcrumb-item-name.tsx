@@ -11,7 +11,12 @@ export const BreadcrumbItemNameSkeleton = () => (
   <Skeleton className='w-20 h-4' />
 )
 
-export async function BreadcrumbItemName({ listId }: { listId: string }) {
+export async function BreadcrumbItemName({
+  params,
+}: {
+  params: Promise<{ listId: string }>
+}) {
+  const { listId } = await params
   const list = await getContactsList({ id: listId })
 
   if (list === null) {

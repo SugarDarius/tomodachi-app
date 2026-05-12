@@ -8,7 +8,12 @@ import { getContactsList } from '../_lib/contacts-list'
 
 export const ContactsListActionSkeleton = () => <Skeleton className='size-8' />
 
-export async function ContactsListAction({ listId }: { listId: string }) {
+export async function ContactsListAction({
+  params,
+}: {
+  params: Promise<{ listId: string }>
+}) {
+  const { listId } = await params
   const list = await getContactsList({ id: listId })
 
   if (list === null) {

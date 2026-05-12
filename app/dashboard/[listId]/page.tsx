@@ -20,7 +20,8 @@ import {
   ContactsTable,
   ContactsTableSkeleton,
 } from './_components/contacts-table'
-import { ImportContactsButton } from '~/components/contacts/import-contacts-button'
+import { ImportContactsButtonSuspense } from '~/components/contacts/import-contact-button-suspense'
+
 import {
   ContactsListAction,
   ContactsListActionSkeleton,
@@ -31,8 +32,6 @@ export default async function Page({
 }: {
   params: Promise<{ listId: string }>
 }) {
-  const { listId } = await params
-
   return (
     <div className='flex flex-col gap-4 p-4 min-h-full'>
       <div className='flex items-center justify-between flex-none'>
@@ -54,26 +53,28 @@ export default async function Page({
             <BreadcrumbSeparator />
             <BreadcrumbItem>
               <Suspense fallback={<BreadcrumbItemNameSkeleton />}>
-                <BreadcrumbItemName listId={listId} />
+                <BreadcrumbItemName params={params} />
               </Suspense>
             </BreadcrumbItem>
           </BreadcrumbList>
         </Breadcrumb>
-        <div className='flex items-center gap-2'>
-          <ImportContactsButton listId={listId} />
+        <div className='flex flex-row items-center gap-2'>
+          <Suspense>
+            <ImportContactsButtonSuspense params={params} />
+          </Suspense>
           <Suspense fallback={<ContactsListActionSkeleton />}>
-            <ContactsListAction listId={listId} />
+            <ContactsListAction params={params} />
           </Suspense>
         </div>
       </div>
       <div className='flex flex-col gap-4 flex-none'>
         <Suspense fallback={<HeadingSkeleton />}>
-          <Heading listId={listId} />
+          <Heading params={params} />
         </Suspense>
       </div>
       <div className='flex flex-col gap-2 flex-1'>
         <Suspense fallback={<ContactsTableSkeleton />}>
-          <ContactsTable listId={listId} />
+          <ContactsTable params={params} />
         </Suspense>
       </div>
     </div>

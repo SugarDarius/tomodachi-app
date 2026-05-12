@@ -8,7 +8,12 @@ import { ContactsTableContent } from './contacts-table-content'
 
 export const ContactsTableSkeleton = () => <Skeleton className='w-full h-18' />
 
-export async function ContactsTable({ listId }: { listId: string }) {
+export async function ContactsTable({
+  params,
+}: {
+  params: Promise<{ listId: string }>
+}) {
+  const { listId } = await params
   const initialPage = await getContactsListMembers({ id: listId })
   // TODO: add client side hydration after initial page is loaded
 

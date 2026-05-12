@@ -1,9 +1,10 @@
 'use client'
 
+import { Button } from '~/components/ui/button'
+import { Spinner } from '~/components/ui/spinner'
+
 import { useImportContacts } from './import-contacts-provider'
 import { ImportContactsDialog } from './import-contacts-dialog'
-import { Button } from '~/components/ui/button'
-import { Spinner } from '../ui/spinner'
 
 export function ImportContactsButton({ listId }: { listId: string }) {
   const { isListImportBusy } = useImportContacts()

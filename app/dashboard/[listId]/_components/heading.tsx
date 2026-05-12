@@ -10,7 +10,12 @@ export const HeadingSkeleton = () => (
   </div>
 )
 
-export async function Heading({ listId }: { listId: string }) {
+export async function Heading({
+  params,
+}: {
+  params: Promise<{ listId: string }>
+}) {
+  const { listId } = await params
   const list = await getContactsList({ id: listId })
 
   if (list === null) {
