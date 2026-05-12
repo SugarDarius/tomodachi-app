@@ -11,6 +11,11 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '~/components/ui/dropdown-menu'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '~/components/ui/tooltip'
 
 import { RenameContactListDialog } from './rename-contact-list-dialog'
 import { DeleteContactListDialog } from './delete-contact-list-dialog'
@@ -45,9 +50,21 @@ export function ContactListActionsMenu({
             Rename
           </DropdownMenuItem>
         </RenameContactListDialog>
-        <DropdownMenuItem disabled>
-          <Download className='size-4' />
-          Export as CSV
+        <DropdownMenuItem
+          onSelect={(e) => {
+            e.preventDefault()
+          }}
+          className='cursor-not-allowed text-muted-foreground hover:text-muted-foreground hover:bg-transparent'
+        >
+          <Tooltip>
+            <TooltipTrigger>
+              <span className='inline-flex gap-1.5 cursor-not-allowed text-muted-foreground hover:text-muted-foreground hover:bg-transparent'>
+                <Download className='size-4' />
+                Export as CSV
+              </span>
+            </TooltipTrigger>
+            <TooltipContent>Export coming soon</TooltipContent>
+          </Tooltip>
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DeleteContactListDialog list={list}>
