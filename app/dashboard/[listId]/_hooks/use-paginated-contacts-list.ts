@@ -52,7 +52,11 @@ export function usePaginatedContactsList({
 }) {
   const [pageIndex, setPageIndex] = useState(initialPageIndex)
 
-  const { data: page, error } = useSafeSWR<ContactsListMembersPage>(
+  const {
+    data: page,
+    error,
+    mutate,
+  } = useSafeSWR<ContactsListMembersPage>(
     `/api/contacts/get/${listId}?pageIndex=${pageIndex}&pageSize=${DEFAULT_PAGE_SIZE}`,
     paginatedContactsListDecoder,
     {
@@ -75,6 +79,7 @@ export function usePaginatedContactsList({
   }
 
   return {
+    mutate,
     error,
     page,
     handleNext,
