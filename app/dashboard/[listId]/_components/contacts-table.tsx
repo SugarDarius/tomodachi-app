@@ -92,6 +92,9 @@ export function ContactsTable({
           <Button onClick={handlePrevious} size='sm' disabled={!canGoPrevious}>
             <ArrowLeft className='size-4' />
           </Button>
+          <span className='text-sm text-muted-foreground'>
+            {page.pageIndex} / {page.totalPages}
+          </span>
           <Button onClick={handleNext} size='sm' disabled={!canGoNext}>
             <ArrowRight className='size-4' />
           </Button>
