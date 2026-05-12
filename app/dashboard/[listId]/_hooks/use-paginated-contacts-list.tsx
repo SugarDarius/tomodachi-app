@@ -21,7 +21,7 @@ export function usePaginatedContactsList({
 }) {
   const [pageIndex, setPageIndex] = useState(initialPageIndex)
   const { data: page, error } = useSafeSWR<ContactsListMembersPage>(
-    `/api/dashboard/contacts/get/${listId}?page=${pageIndex}&pageSize=${DEFAULT_PAGE_SIZE}`,
+    `/api/contacts/get/${listId}?pageIndex=${pageIndex}&pageSize=${DEFAULT_PAGE_SIZE}`,
     object({
       contacts: array(unknown).refineType<Contact[]>(),
       totalCount: number,
