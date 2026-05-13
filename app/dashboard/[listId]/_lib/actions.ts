@@ -1,6 +1,6 @@
 'use server'
 
-import { inArray } from 'drizzle-orm'
+import { and, eq, inArray } from 'drizzle-orm'
 
 import { array, object, string } from 'decoders'
 import {
@@ -9,7 +9,7 @@ import {
   type SafeServerActionResult,
 } from '@sugardarius/anzen'
 
-import { contacts } from '~/schema'
+import { contacts, contactsListMembers } from '~/schema'
 import { db } from '~/lib/db'
 import { auth } from '~/lib/auth/server'
 
@@ -32,11 +32,22 @@ export const deleteContacts = createSafeServerAction(
     },
   },
   async ({ input, tagErr }) => {
-    const { rowIds } = input
+    const { listId, rowIds } = input
 
     const results = await db
       .delete(contacts)
-      .where(inArray(contacts.id, rowIds))
+      .where(
+        and(
+          inArray(contacts.id, rowIds),
+          inArray(
+            contacts.id,
+            db
+              .select({ id: contactsListMembers.contactId })
+              .from(contactsListMembers)
+              .where(eq(contactsListMembers.listId, listId))
+          )
+        )
+      )
       .returning({ deleted: contacts.id })
 
     if (results.length !== rowIds.length) {
