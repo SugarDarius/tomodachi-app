@@ -15,7 +15,6 @@ import {
   ContactsListsGridSkeleton,
   ContactsListsGrid,
 } from './_components/contacts-lists-grid'
-import { getContactsLists } from './_lib/contacts-lists'
 
 export default async function Page() {
   return (
@@ -49,7 +48,7 @@ export default async function Page() {
         </div>
       </div>
       <Suspense fallback={<ContactsListsGridSkeleton count={4} />}>
-        <ContactsListsGrid getContactsListsPromise={getContactsLists()} />
+        <ContactsListsGrid />
       </Suspense>
     </div>
   )

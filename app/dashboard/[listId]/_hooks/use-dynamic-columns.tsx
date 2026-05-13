@@ -52,7 +52,7 @@ export function useDynamicColumns({ columnMap }: { columnMap: ColumnMapping }) {
             <Checkbox />
           </div>
         ),
-        cell: ({ row }) => (
+        cell: () => (
           <div className='flex items-center px-2'>
             <Checkbox />
           </div>
