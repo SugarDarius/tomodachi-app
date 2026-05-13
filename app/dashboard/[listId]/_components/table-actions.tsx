@@ -1,6 +1,6 @@
 'use client'
 
-import { Plus, RefreshCw } from 'lucide-react'
+import { Plus, RefreshCw, Trash } from 'lucide-react'
 
 import { Button } from '~/components/ui/button'
 import {
@@ -26,6 +26,7 @@ export function TableActions({
   const { getSelectedRowIds } = useTableRowsStore()
 
   const selectedRowIds = getSelectedRowIds()
+  const numberOfSelectedRows = selectedRowIds.length
 
   return (
     <div className='flex items-center justify-between py-2 flex-none border-b border-border'>
@@ -44,12 +45,18 @@ export function TableActions({
         </Tooltip>
       </div>
       <div className='flex items-center gap-2'>
-        {selectedRowIds.length > 0 ? (
+        {numberOfSelectedRows ? (
           <DeleteContactsDialog
             listId={listId}
-            selectedRowIds={selectedRowIds}
+            contactIds={selectedRowIds}
             refresh={onRefresh}
-          />
+          >
+            <Button variant='default'>
+              <Trash className='size-4' />
+              Delete {numberOfSelectedRows}{' '}
+              {numberOfSelectedRows === 1 ? 'contact' : 'contacts'}
+            </Button>
+          </DeleteContactsDialog>
         ) : null}
         <div className='flex items-center w-[60px] justify-center'>
           <span className='text-sm text-muted-foreground'>

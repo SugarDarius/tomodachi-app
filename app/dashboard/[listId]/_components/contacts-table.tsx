@@ -24,6 +24,7 @@ import { usePaginatedContactsList } from '../_hooks/use-paginated-contacts-list'
 import { useDynamicColumns } from '../_hooks/use-dynamic-columns'
 
 import { TableActions } from './table-actions'
+import { ContactDialog } from './contact-dialog'
 
 export function ContactsTable({
   listId,
@@ -84,16 +85,25 @@ export function ContactsTable({
             </TableHeader>
             <TableBody>
               {({ row }) => {
-                const selected = isRowSelected((row.original as Contact).id)
+                const contact = row.original as Contact
+                const selected = isRowSelected(contact.id)
+
                 return (
-                  <TableRow
+                  <ContactDialog
                     key={row.id}
-                    row={row}
-                    className='cursor-pointer'
-                    selected={selected}
+                    listId={listId}
+                    contact={contact}
+                    refresh={handleRefresh}
                   >
-                    {({ cell }) => <TableCell cell={cell} key={cell.id} />}
-                  </TableRow>
+                    <TableRow
+                      key={row.id}
+                      row={row}
+                      className='cursor-pointer'
+                      selected={selected}
+                    >
+                      {({ cell }) => <TableCell cell={cell} key={cell.id} />}
+                    </TableRow>
+                  </ContactDialog>
                 )
               }}
             </TableBody>

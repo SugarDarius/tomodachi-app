@@ -1,7 +1,7 @@
 'use client'
 
 import { usePathname } from 'next/navigation'
-import { useTransition, useCallback } from 'react'
+import { useTransition, useCallback, useState } from 'react'
 
 import { type ContactsList } from '~/schema'
 import { capitalize } from '~/utils/chars'
@@ -28,6 +28,7 @@ export function DeleteContactListDialog({
   list: ContactsList
   children: React.ReactNode
 }) {
+  const [open, setOpen] = useState(false)
   const pathname = usePathname()
   const [pending, startTransition] = useTransition()
 
@@ -41,22 +42,28 @@ export function DeleteContactListDialog({
       if (!result.success) {
         console.error(result.error)
         // TODO: add toast here
+      } else {
+        startTransition(() => {
+          setOpen(false)
+        })
       }
     })
   }, [list.id, pathname])
 
   return (
-    <AlertDialog>
+    <AlertDialog open={open} onOpenChange={setOpen}>
       <AlertDialogTrigger asChild>{children}</AlertDialogTrigger>
       <AlertDialogContent className='sm:max-w-sm'>
         <AlertDialogHeader>
           <AlertDialogTitle>Delete contact list</AlertDialogTitle>
-          <AlertDialogDescription>
-            Are you sure you want to delete{' '}
-            <span className='font-medium text-foreground'>
-              {capitalize(list.name)}
+          <AlertDialogDescription className='flex flex-col gap-0.5'>
+            <span>
+              Are you sure you want to delete{' '}
+              <span className='font-medium text-foreground'>
+                {capitalize(list.name)}
+              </span>
+              ?{' '}
             </span>
-            ?{' '}
             <span className='font-semibold text-foreground'>
               This action cannot be undone.
             </span>

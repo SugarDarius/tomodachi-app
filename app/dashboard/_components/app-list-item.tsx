@@ -33,6 +33,7 @@ export function AppListItem({ list }: { list: ContactsList }) {
         <SidebarMenuAction
           showOnHover
           aria-label={`Open actions menu for ${list.name}`}
+          className='cursor-pointer'
         >
           <MoreHorizontal />
         </SidebarMenuAction>

@@ -39,7 +39,13 @@ export function TableRowCellAction({ id }: { id: string }) {
 
   return (
     <div className='flex items-center px-2'>
-      <Checkbox checked={checked} onCheckedChange={handleCheckedChange} />
+      <Checkbox
+        checked={checked}
+        onCheckedChange={handleCheckedChange}
+        onClick={(e) => {
+          e.stopPropagation()
+        }}
+      />
     </div>
   )
 }

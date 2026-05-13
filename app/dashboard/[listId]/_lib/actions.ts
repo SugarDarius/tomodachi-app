@@ -18,7 +18,7 @@ export const deleteContacts = createSafeServerAction(
     id: 'contacts/delete',
     input: object({
       listId: string,
-      rowIds: array(string),
+      contactIds: array(string),
     }),
     authorize: async () => {
       const { data: session } = await auth.getSession()
@@ -32,13 +32,13 @@ export const deleteContacts = createSafeServerAction(
     },
   },
   async ({ input, tagErr }) => {
-    const { listId, rowIds } = input
+    const { listId, contactIds } = input
 
     const results = await db
       .delete(contacts)
       .where(
         and(
-          inArray(contacts.id, rowIds),
+          inArray(contacts.id, contactIds),
           inArray(
             contacts.id,
             db
@@ -50,7 +50,7 @@ export const deleteContacts = createSafeServerAction(
       )
       .returning({ deleted: contacts.id })
 
-    if (results.length !== rowIds.length) {
+    if (results.length !== contactIds.length) {
       tagErr('CONTACT_DELETION_FAILED', {
         message: 'failed to delete contacts',
       })
