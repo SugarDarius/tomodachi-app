@@ -3,7 +3,7 @@
 import { updateTag } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { and, eq, isNull } from 'drizzle-orm'
-import { object, string } from 'decoders'
+import { boolean, object, string } from 'decoders'
 import {
   createSafeServerAction,
   type SafeServerActionError,
@@ -124,6 +124,7 @@ export const deleteContactList = createSafeServerAction(
     id: 'contacts-lists/delete',
     input: object({
       id: string,
+      redirectToDashboard: boolean,
     }),
     authorize: async () => {
       const { data: session } = await auth.getSession()
@@ -157,7 +158,9 @@ export const deleteContactList = createSafeServerAction(
     }
 
     updateTag('contacts-lists')
-    redirect('/dashboard')
+    if (input.redirectToDashboard) {
+      redirect('/dashboard')
+    }
   }
 )
 
