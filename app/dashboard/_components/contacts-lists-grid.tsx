@@ -14,18 +14,29 @@ import { getContactsLists } from '../_lib/contacts-lists'
 export function ContactsListCardSkeleton() {
   return (
     <Card className='gap-8'>
-      <CardHeader>
-        <div className='flex items-center gap-2'>
-          <Skeleton className='size-8 shrink-0 rounded-lg' />
-          <Skeleton className='h-5 w-32' />
+      <CardHeader className='flex-none'>
+        <div className='flex items-start justify-between'>
+          <div className='flex items-center gap-2'>
+            <Skeleton className='size-10 shrink-0 rounded-lg' />
+            <div className='flex flex-col gap-0.5'>
+              <Skeleton className='h-5 w-24' />
+              <Skeleton className='h-4 w-32' />
+            </div>
+          </div>
+          <Skeleton className='h-5 w-16 rounded-full' />
         </div>
       </CardHeader>
-      <CardContent className='pt-0 gap-2'>
-        <div className='flex items-center gap-2'>
-          <Skeleton className='h-4 w-4' />
-          <Skeleton className='h-4 w-24' />
+      <CardContent className='pt-0 flex-1 flex flex-col justify-end'>
+        <div className='flex items-center gap-2 justify-between'>
+          <div className='flex items-center gap-2'>
+            <Skeleton className='size-5 rounded-xs' />
+            <Skeleton className='h-5 w-21 rounded-xs' />
+          </div>
+          <div className='flex items-center gap-2'>
+            <Skeleton className='size-5 rounded-xs' />
+            <Skeleton className='h-5 w-21 rounded-xs' />
+          </div>
         </div>
-        <Skeleton className='h-3 w-16' />
       </CardContent>
     </Card>
   )

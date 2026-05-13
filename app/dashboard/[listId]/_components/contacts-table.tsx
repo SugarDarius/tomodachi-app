@@ -110,12 +110,22 @@ export function ContactsTable({
             : ''}
         </span>
         <div className='flex items-center gap-1'>
-          <Button onClick={handlePrevious} size='sm' disabled={!canGoPrevious}>
+          <Button
+            onClick={handlePrevious}
+            size='sm'
+            variant='secondary'
+            disabled={!canGoPrevious}
+          >
             <ArrowLeft className='size-4' />
             <span className='text-sm'>Previous</span>
           </Button>
 
-          <Button onClick={handleNext} size='sm' disabled={!canGoNext}>
+          <Button
+            onClick={handleNext}
+            size='sm'
+            variant='secondary'
+            disabled={!canGoNext}
+          >
             <span className='text-sm'>Next</span>
             <ArrowRight className='size-4' />
           </Button>
