@@ -40,7 +40,7 @@ export const useTableRowsStore = create<TableRowsState>()((set, get) => ({
     if (row) {
       rows.set(id, { selected })
     }
-    const allSelected = rows.entries().every(([_, { selected }]) => selected)
+    const allSelected = rows.entries().every(([, { selected }]) => selected)
     set({ rows: new Map(rows), allSelected })
   },
   isRowSelected: (id: string) => {

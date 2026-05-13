@@ -22,6 +22,8 @@ import { useTableRowsStore } from '../_stores/table-rows'
 import { usePaginatedContactsList } from '../_hooks/use-paginated-contacts-list'
 import { useDynamicColumns } from '../_hooks/use-dynamic-columns'
 
+import { TableActions } from './table-actions'
+
 export function ContactsTable({
   listId,
   initialPage,
@@ -47,6 +49,7 @@ export function ContactsTable({
 
   return (
     <div className='flex flex-col gap-2 flex-1 overflow-hidden'>
+      <TableActions />
       <div className='flex-1 overflow-hidden'>
         <div className='w-full h-full overflow-auto'>
           <TableProvider data={page.contacts} columns={columns}>
