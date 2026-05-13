@@ -33,6 +33,7 @@ export function ContactsTable({
   initialPage: ContactsListMembersPage
 }) {
   const { isRowSelected, unSelectAll } = useTableRowsStore()
+
   const {
     page,
     handlePrevious,

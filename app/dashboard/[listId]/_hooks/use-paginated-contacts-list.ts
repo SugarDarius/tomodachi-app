@@ -10,7 +10,8 @@ import {
   nullable,
   record,
 } from 'decoders'
-import { useState, useEffect } from 'react'
+import { useQueryState, parseAsInteger } from 'nuqs'
+import { useEffect } from 'react'
 
 import { type ColumnMapping, type Contact } from '~/schema'
 import { useSafeSWR, preloadSafeSWR } from '~/hooks/use-safe-swr'
@@ -50,6 +51,10 @@ const paginatedContactsListDecoder = object({
   canGoPrevious: boolean,
 }).refineType<ContactsListMembersPage>()
 
+/**
+ * Custom hook to handle client-side hydration of the data
+ * and pagination (shareable in the URL state)
+ */
 export function usePaginatedContactsList({
   listId,
   initialPage,
@@ -61,7 +66,10 @@ export function usePaginatedContactsList({
   initialPageIndex?: number
   onPageChange?: () => void
 }) {
-  const [pageIndex, setPageIndex] = useState(initialPageIndex)
+  const [pageIndex, setPageIndex] = useQueryState(
+    'page',
+    parseAsInteger.withDefault(initialPageIndex)
+  )
 
   const {
     data: page,
@@ -73,7 +81,9 @@ export function usePaginatedContactsList({
     {
       initialData: initialPage,
       revalidateOnFocus: true,
-      refreshInterval: 4 * 1000, // 4 seconds
+      // 👇🏻 Refresh interval to keep the data fresh (every 10 seconds)
+      // for such a use case like csv import 10s is very fair enough.
+      refreshInterval: 10 * 1000,
     }
   )
 

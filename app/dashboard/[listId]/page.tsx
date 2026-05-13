@@ -29,8 +29,10 @@ import {
 
 export default async function Page({
   params,
+  searchParams,
 }: {
   params: Promise<{ listId: string }>
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>
 }) {
   return (
     <div className='flex flex-col gap-4 p-4 h-full max-h-full overflow-hidden'>
@@ -74,7 +76,7 @@ export default async function Page({
       </div>
       <div className='flex flex-col gap-2 flex-1 overflow-hidden'>
         <Suspense fallback={<ContactsTableSkeleton />}>
-          <ContactsTableSuspense params={params} />
+          <ContactsTableSuspense params={params} searchParams={searchParams} />
         </Suspense>
       </div>
     </div>

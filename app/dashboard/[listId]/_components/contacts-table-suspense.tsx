@@ -1,6 +1,10 @@
+import { numeric } from 'decoders'
+
 import { Skeleton } from '~/components/ui/skeleton'
 
+import { DEFAULT_PAGE_INDEX } from '../_lib/constants'
 import { getContactsListMembersPaginated } from '../_lib/contacts-list'
+
 import { ContactsTable } from './contacts-table'
 
 export const ContactsTableSkeleton = () => (
@@ -19,11 +23,21 @@ export const ContactsTableSkeleton = () => (
 
 export async function ContactsTableSuspense({
   params,
+  searchParams,
 }: {
   params: Promise<{ listId: string }>
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>
 }) {
   const { listId } = await params
-  const initialPage = await getContactsListMembersPaginated({ id: listId })
+  const { page } = await searchParams
+
+  const decodedPage = numeric.decode(page)
+  const pageIndex = decodedPage.ok ? decodedPage.value : DEFAULT_PAGE_INDEX
+
+  const initialPage = await getContactsListMembersPaginated({
+    id: listId,
+    pageIndex,
+  })
 
   return <ContactsTable listId={listId} initialPage={initialPage} />
 }
