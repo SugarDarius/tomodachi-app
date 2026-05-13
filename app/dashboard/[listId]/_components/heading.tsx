@@ -26,7 +26,11 @@ export async function Heading({
     <div className='flex flex-col'>
       <h1 className='text-2xl font-bold'>{capitalize(list.name)}</h1>
       <p className='text-muted-foreground'>
-        Manage all your contacts in this list
+        Import or manage contacts in the{' '}
+        <span className='font-semibold text-foreground'>
+          &quot;{capitalize(list.name)}&quot;
+        </span>
+        list
       </p>
     </div>
   )
