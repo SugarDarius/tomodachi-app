@@ -61,7 +61,12 @@ export function ContactsTable({
 
   return (
     <div className='flex flex-col gap-2 flex-1 overflow-hidden'>
-      <TableActions listId={listId} onRefresh={handleRefresh} />
+      <TableActions
+        listId={listId}
+        pageIndex={page.pageIndex}
+        totalPages={page.totalPages}
+        onRefresh={handleRefresh}
+      />
       <div className='flex-1 overflow-hidden'>
         <div className='w-full h-full overflow-auto'>
           <TableProvider data={page.contacts} columns={columns}>
@@ -107,13 +112,11 @@ export function ContactsTable({
         <div className='flex items-center gap-1'>
           <Button onClick={handlePrevious} size='sm' disabled={!canGoPrevious}>
             <ArrowLeft className='size-4' />
+            <span className='text-sm'>Previous</span>
           </Button>
-          <div className='flex items-center w-[60px] justify-center'>
-            <span className='text-sm text-muted-foreground'>
-              {page.pageIndex} / {page.totalPages}
-            </span>
-          </div>
+
           <Button onClick={handleNext} size='sm' disabled={!canGoNext}>
+            <span className='text-sm'>Next</span>
             <ArrowRight className='size-4' />
           </Button>
         </div>

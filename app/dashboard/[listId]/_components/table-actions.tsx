@@ -14,9 +14,13 @@ import { DeleteContactsDialog } from './delete-contacts-dialog'
 
 export function TableActions({
   listId,
+  pageIndex,
+  totalPages,
   onRefresh,
 }: {
   listId: string
+  pageIndex: number
+  totalPages: number
   onRefresh: () => void
 }) {
   const { getSelectedRowIds } = useTableRowsStore()
@@ -47,6 +51,11 @@ export function TableActions({
             refresh={onRefresh}
           />
         ) : null}
+        <div className='flex items-center w-[60px] justify-center'>
+          <span className='text-sm text-muted-foreground'>
+            {pageIndex} / {totalPages}
+          </span>
+        </div>
         <Button variant='outline' onClick={onRefresh}>
           <RefreshCw className='size-4' />
         </Button>
