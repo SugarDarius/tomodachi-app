@@ -223,13 +223,19 @@ export const TableCell = ({ cell, className }: TableCellProps) => (
 export type TableRowProps = {
   row: Row<unknown>
   children: (props: { cell: Cell<unknown, unknown> }) => ReactNode
+  selected?: boolean
   className?: string
 }
 
-export const TableRow = ({ row, children, className }: TableRowProps) => (
+export const TableRow = ({
+  row,
+  children,
+  selected = false,
+  className,
+}: TableRowProps) => (
   <TableRowRaw
     className={className}
-    data-state={row.getIsSelected() && 'selected'}
+    data-state={(row.getIsSelected() || selected) && 'selected'}
     key={row.id}
   >
     {row.getVisibleCells().map((cell) => children({ cell }))}

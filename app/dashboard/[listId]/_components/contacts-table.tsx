@@ -2,6 +2,7 @@
 
 import { ContactIcon, ArrowLeft, ArrowRight } from 'lucide-react'
 
+import { type Contact } from '~/schema'
 import { formatNumberWithCommas } from '~/utils/format-number'
 import {
   TableBody,
@@ -17,6 +18,7 @@ import { ImportContactsButton } from '~/components/contacts/import-contacts-butt
 
 import { type ContactsListMembersPage } from '../_lib/contacts-list'
 
+import { useTableRowsStore } from '../_stores/table-rows'
 import { usePaginatedContactsList } from '../_hooks/use-paginated-contacts-list'
 import { useDynamicColumns } from '../_hooks/use-dynamic-columns'
 
@@ -30,6 +32,7 @@ export function ContactsTable({
   const { page, handlePrevious, handleNext, canGoPrevious, canGoNext } =
     usePaginatedContactsList({ listId, initialPage })
   const columns = useDynamicColumns({ columnMap: page.columnMap })
+  const { isRowSelected } = useTableRowsStore()
 
   if (page.totalCount === 0) {
     return (
@@ -60,11 +63,19 @@ export function ContactsTable({
               )}
             </TableHeader>
             <TableBody>
-              {({ row }) => (
-                <TableRow key={row.id} row={row} className='cursor-pointer'>
-                  {({ cell }) => <TableCell cell={cell} key={cell.id} />}
-                </TableRow>
-              )}
+              {({ row }) => {
+                const selected = isRowSelected((row.original as Contact).id)
+                return (
+                  <TableRow
+                    key={row.id}
+                    row={row}
+                    className='cursor-pointer'
+                    selected={selected}
+                  >
+                    {({ cell }) => <TableCell cell={cell} key={cell.id} />}
+                  </TableRow>
+                )
+              }}
             </TableBody>
           </TableProvider>
         </div>

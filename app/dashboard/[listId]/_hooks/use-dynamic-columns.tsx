@@ -9,9 +9,12 @@ import {
 } from '~/schema'
 
 import { formatDateAsEnUs } from '~/utils/format-date'
-
 import { type ColumnDef, TableColumnHeader } from '~/components/kibo-ui/table'
-import { Checkbox } from '~/components/ui/checkbox'
+
+import {
+  TableHeaderCellAction,
+  TableRowCellAction,
+} from '../_components/table-cell-actions'
 
 const getCanonicalAccessorKey = (key: CanonicalContactField) => {
   return key === 'email'
@@ -47,16 +50,8 @@ export function useDynamicColumns({ columnMap }: { columnMap: ColumnMapping }) {
     const columns: ColumnDef<Contact>[] = [
       {
         id: 'select',
-        header: () => (
-          <div className='flex items-center px-2'>
-            <Checkbox />
-          </div>
-        ),
-        cell: () => (
-          <div className='flex items-center px-2'>
-            <Checkbox />
-          </div>
-        ),
+        header: () => <TableHeaderCellAction />,
+        cell: ({ row }) => <TableRowCellAction id={row.original.id} />,
       },
       ...storedColumns.map(
         (meta) =>
