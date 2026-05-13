@@ -58,10 +58,7 @@ export function useSafeSWR<T>(
   }
 }
 
-export function preloadSWRAugmented<T>(
-  url: string,
-  resDecoder: Decoder<T>
-): void {
+export function preloadSafeSWR<T>(url: string, resDecoder: Decoder<T>): void {
   preload(url, async (url: string) => {
     const res = await fetch(url)
     if (!res.ok) {

@@ -10,10 +10,10 @@ import {
   nullable,
   record,
 } from 'decoders'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 
 import { type ColumnMapping, type Contact } from '~/schema'
-import { useSafeSWR } from '~/hooks/use-safe-swr'
+import { useSafeSWR, preloadSafeSWR } from '~/hooks/use-safe-swr'
 
 import { type ContactsListMembersPage } from '../_lib/contacts-list'
 
@@ -86,6 +86,15 @@ export function usePaginatedContactsList({
       setPageIndex(pageIndex - 1)
     }
   }
+
+  useEffect(() => {
+    if (page.canGoNext) {
+      preloadSafeSWR(
+        `/api/contacts/get/${listId}?pageIndex=${pageIndex + 1}&pageSize=${DEFAULT_PAGE_SIZE}`,
+        paginatedContactsListDecoder
+      )
+    }
+  }, [page.canGoNext, listId, pageIndex])
 
   return {
     mutate,
