@@ -67,6 +67,7 @@ export async function ContactsListsGrid() {
                 <Pill>
                   <PillIndicator
                     variant={list.meta.contactCount > 0 ? 'success' : 'error'}
+                    pulse={list.meta.contactCount > 0}
                   />
                   {list.meta.contactCount > 0 ? 'Active' : 'Inactive'}
                 </Pill>
