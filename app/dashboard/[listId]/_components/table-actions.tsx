@@ -12,17 +12,20 @@ import {
 export function TableActions() {
   return (
     <div className='flex items-center justify-between py-2 flex-none border-b border-border'>
-      <Button variant='outline'>
+      <div className='flex items-center gap-2'>
         <Tooltip>
-          <TooltipTrigger>
-            <span className='inline-flex gap-1.5 cursor-not-allowed text-muted-foreground hover:text-muted-foreground hover:bg-transparent'>
+          <TooltipTrigger asChild>
+            <Button
+              variant='outline'
+              className='cursor-not-allowed text-muted-foreground hover:text-muted-foreground hover:bg-transparent'
+            >
               <Plus className='size-4' />
               Create contact
-            </span>
+            </Button>
           </TooltipTrigger>
           <TooltipContent>Coming soon</TooltipContent>
         </Tooltip>
-      </Button>
+      </div>
     </div>
   )
 }
