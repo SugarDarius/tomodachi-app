@@ -1,4 +1,4 @@
-import { string, numeric } from 'decoders'
+import { string, numeric, optional } from 'decoders'
 import { createSafeRouteHandler } from '@sugardarius/anzen'
 
 import { auth } from '~/lib/auth/server'
@@ -13,6 +13,7 @@ export const GET = createSafeRouteHandler(
     searchParams: {
       pageIndex: numeric,
       pageSize: numeric,
+      searchQuery: optional(string),
     },
     authorize: async () => {
       const { data: session } = await auth.getSession()
@@ -27,12 +28,13 @@ export const GET = createSafeRouteHandler(
   },
   async ({ segments, searchParams }) => {
     const { listId } = segments
-    const { pageIndex, pageSize } = searchParams
+    const { pageIndex, pageSize, searchQuery } = searchParams
 
     const page = await getContactsListMembersPaginated({
       id: listId,
       pageIndex,
       pageSize,
+      searchQuery,
     })
 
     return Response.json(page, { status: 200 })

@@ -29,22 +29,27 @@ import { ContactDialog } from './contact-dialog'
 export function ContactsTable({
   listId,
   initialPage,
+  initialSearchQuery,
 }: {
   listId: string
   initialPage: ContactsListMembersPage
+  initialSearchQuery?: string
 }) {
   const { isRowSelected, unSelectAll } = useTableRowsStore()
 
   const {
     page,
+    searchQuery,
     handlePrevious,
     handleNext,
     handleRefresh,
+    handleUpdateSearchQuery,
     canGoPrevious,
     canGoNext,
   } = usePaginatedContactsList({
     listId,
     initialPage,
+    initialSearchQuery,
     onPageChange: () => unSelectAll(),
   })
   const columns = useDynamicColumns({ columnMap: page.columnMap })
@@ -66,7 +71,9 @@ export function ContactsTable({
         listId={listId}
         pageIndex={page.pageIndex}
         totalPages={page.totalPages}
-        onRefresh={handleRefresh}
+        refresh={handleRefresh}
+        searchQuery={searchQuery}
+        updateSearchQuery={handleUpdateSearchQuery}
       />
       <div className='flex-1 overflow-hidden'>
         <div className='w-full h-full overflow-auto'>

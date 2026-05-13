@@ -63,6 +63,7 @@ export async function getContactsListMembersPaginated({
   id: string
   pageIndex?: number
   pageSize?: number
+  searchQuery?: string
 }): Promise<ContactsListMembersPage> {
   const $pageIndex = Math.max(1, Math.floor(pageIndex))
   const $pageSize = Math.min(MAX_PAGE_SIZE, Math.max(1, Math.floor(pageSize)))

@@ -15,10 +15,11 @@ export function useCopyButton(
   callbackRef.current = onCopy
 
   const onClick: React.MouseEventHandler = useCallback(() => {
-    if (timeoutRef.current) window.clearTimeout(timeoutRef.current)
-    const res = Promise.resolve(callbackRef.current())
+    if (timeoutRef.current) {
+      window.clearTimeout(timeoutRef.current)
+    }
 
-    res.then(() => {
+    Promise.resolve(callbackRef.current()).then(() => {
       setCopied(true)
       timeoutRef.current = window.setTimeout(() => {
         setCopied(false)

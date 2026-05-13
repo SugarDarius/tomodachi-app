@@ -10,11 +10,12 @@ import {
   nullable,
   record,
 } from 'decoders'
-import { useQueryState, parseAsInteger } from 'nuqs'
+import { useQueryState, parseAsInteger, parseAsString } from 'nuqs'
 import { useEffect } from 'react'
 
 import { type ColumnMapping, type Contact } from '~/schema'
 import { useSafeSWR, preloadSafeSWR } from '~/hooks/use-safe-swr'
+import { useDebounce } from '~/hooks/use-debounce'
 
 import { type ContactsListMembersPage } from '../_lib/contacts-list'
 
@@ -52,31 +53,41 @@ const paginatedContactsListDecoder = object({
 }).refineType<ContactsListMembersPage>()
 
 /**
- * Custom hook to handle client-side hydration of the data
- * and pagination (shareable in the URL state)
+ * Custom hook to handle client-side hydration of the data with
+ * - pagination (shareable in the URL state)
+ * - search query (debounced / shareable in the URL state)
+ * - data preloading (to avoid flickering)
  */
 export function usePaginatedContactsList({
   listId,
   initialPage,
   initialPageIndex = DEFAULT_PAGE_INDEX,
+  initialSearchQuery = '',
   onPageChange,
 }: {
   listId: string
   initialPage: ContactsListMembersPage
   initialPageIndex?: number
+  initialSearchQuery?: string
   onPageChange?: () => void
 }) {
   const [pageIndex, setPageIndex] = useQueryState(
     'page',
     parseAsInteger.withDefault(initialPageIndex)
   )
+  const [searchQuery, setSearchQuery] = useQueryState(
+    'search',
+    parseAsString.withDefault(initialSearchQuery)
+  )
+
+  const debouncedSearchQuery = useDebounce(searchQuery, 500)
 
   const {
     data: page,
     error,
     mutate,
   } = useSafeSWR<ContactsListMembersPage>(
-    `/api/contacts/get/${listId}?pageIndex=${pageIndex}&pageSize=${DEFAULT_PAGE_SIZE}`,
+    `/api/contacts/get/${listId}?pageIndex=${pageIndex}&pageSize=${DEFAULT_PAGE_SIZE}&searchQuery=${debouncedSearchQuery}`,
     paginatedContactsListDecoder,
     {
       initialData: initialPage,
@@ -105,6 +116,10 @@ export function usePaginatedContactsList({
     mutate()
   }
 
+  const handleUpdateSearchQuery = (query: string) => {
+    setSearchQuery(query)
+  }
+
   useEffect(() => {
     if (page.canGoNext) {
       preloadSafeSWR(
@@ -117,9 +132,11 @@ export function usePaginatedContactsList({
   return {
     error,
     page,
+    searchQuery,
     handleNext,
     handlePrevious,
     handleRefresh,
+    handleUpdateSearchQuery,
     canGoNext: page.canGoNext,
     canGoPrevious: page.canGoPrevious,
   }

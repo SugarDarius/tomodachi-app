@@ -1,4 +1,4 @@
-import { numeric } from 'decoders'
+import { numeric, optional, string } from 'decoders'
 
 import { Skeleton } from '~/components/ui/skeleton'
 
@@ -29,15 +29,25 @@ export async function ContactsTableSuspense({
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>
 }) {
   const { listId } = await params
-  const { page } = await searchParams
+  const { page, search } = await searchParams
 
   const decodedPage = numeric.decode(page)
   const pageIndex = decodedPage.ok ? decodedPage.value : DEFAULT_PAGE_INDEX
 
+  const decodedSearch = optional(string).decode(search)
+  const searchQuery = decodedSearch.ok ? decodedSearch.value : undefined
+
   const initialPage = await getContactsListMembersPaginated({
     id: listId,
     pageIndex,
+    searchQuery,
   })
 
-  return <ContactsTable listId={listId} initialPage={initialPage} />
+  return (
+    <ContactsTable
+      listId={listId}
+      initialPage={initialPage}
+      initialSearchQuery={searchQuery}
+    />
+  )
 }

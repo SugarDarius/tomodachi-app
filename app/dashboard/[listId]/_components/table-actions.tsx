@@ -1,6 +1,6 @@
 'use client'
 
-import { Plus, RefreshCw, Trash } from 'lucide-react'
+import { Plus, RefreshCw, Trash, Search, XIcon } from 'lucide-react'
 
 import { Button } from '~/components/ui/button'
 import {
@@ -8,6 +8,12 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from '~/components/ui/tooltip'
+import {
+  InputGroup,
+  InputGroupAddon,
+  InputGroupButton,
+  InputGroupInput,
+} from '~/components/ui/input-group'
 
 import { useTableRowsStore } from '../_stores/table-rows'
 import { DeleteContactsDialog } from './delete-contacts-dialog'
@@ -16,17 +22,29 @@ export function TableActions({
   listId,
   pageIndex,
   totalPages,
-  onRefresh,
+  searchQuery,
+  refresh,
+  updateSearchQuery,
 }: {
   listId: string
   pageIndex: number
   totalPages: number
-  onRefresh: () => void
+  searchQuery: string
+  refresh: () => void
+  updateSearchQuery: (query: string) => void
 }) {
   const { getSelectedRowIds } = useTableRowsStore()
 
   const selectedRowIds = getSelectedRowIds()
   const numberOfSelectedRows = selectedRowIds.length
+
+  const handleResetSearch = () => {
+    updateSearchQuery('')
+  }
+
+  const handleUpdateSearchQuery = (query: string) => {
+    updateSearchQuery(query)
+  }
 
   return (
     <div className='flex items-center justify-between py-2 flex-none border-b border-border'>
@@ -43,13 +61,33 @@ export function TableActions({
           </TooltipTrigger>
           <TooltipContent>Coming soon</TooltipContent>
         </Tooltip>
+        <InputGroup>
+          <InputGroupInput
+            placeholder='Search contacts by email…'
+            className='w-56'
+            value={searchQuery}
+            onChange={(e) => handleUpdateSearchQuery(e.target.value)}
+          />
+          <InputGroupAddon>
+            <Search className='size-3 text-muted-foreground' />
+          </InputGroupAddon>
+          <InputGroupAddon align='inline-end'>
+            <InputGroupButton
+              variant='secondary'
+              size='icon-xs'
+              onClick={handleResetSearch}
+            >
+              <XIcon className='size-3 text-muted-foreground' />
+            </InputGroupButton>
+          </InputGroupAddon>
+        </InputGroup>
       </div>
       <div className='flex items-center gap-2'>
         {numberOfSelectedRows ? (
           <DeleteContactsDialog
             listId={listId}
             contactIds={selectedRowIds}
-            refresh={onRefresh}
+            refresh={refresh}
           >
             <Button variant='default'>
               <Trash className='size-4' />
@@ -65,7 +103,7 @@ export function TableActions({
         </div>
         <Tooltip>
           <TooltipTrigger asChild>
-            <Button variant='outline' onClick={onRefresh}>
+            <Button variant='outline' onClick={refresh}>
               <RefreshCw className='size-4' />
             </Button>
           </TooltipTrigger>
