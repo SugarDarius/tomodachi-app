@@ -6,17 +6,27 @@ import { Spinner } from '~/components/ui/spinner'
 import { useImportContacts } from './import-contacts-provider'
 import { ImportContactsDialog } from './import-contacts-dialog'
 
-export function ImportContactsButton({ listId }: { listId: string }) {
+export function ImportContactsButton({
+  listId,
+  appearance = 'default',
+}: {
+  listId: string
+  appearance?: 'default' | 'icon'
+}) {
   const { isListImportBusy } = useImportContacts()
 
   if (isListImportBusy(listId)) {
     return (
-      <Button variant='outline' disabled>
+      <Button
+        variant='outline'
+        disabled
+        size={appearance === 'default' ? 'default' : 'icon'}
+      >
         <Spinner data-icon='inline-start' />
-        Importing...
+        {appearance === 'default' ? 'Importing...' : null}
       </Button>
     )
   }
 
-  return <ImportContactsDialog listId={listId} />
+  return <ImportContactsDialog listId={listId} appearance={appearance} />
 }

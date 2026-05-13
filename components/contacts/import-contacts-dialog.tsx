@@ -25,7 +25,13 @@ import {
   REQUIRED_ROLES,
 } from './columns-selector'
 
-export function ImportContactsDialog({ listId }: { listId: string }) {
+export function ImportContactsDialog({
+  listId,
+  appearance = 'default',
+}: {
+  listId: string
+  appearance?: 'default' | 'icon'
+}) {
   const {
     activeContactImport,
     prepareContactImport,
@@ -118,9 +124,12 @@ export function ImportContactsDialog({ listId }: { listId: string }) {
   return (
     <Sheet open={open} onOpenChange={handleOpenChange}>
       <SheetTrigger asChild>
-        <Button variant='default'>
+        <Button
+          variant='default'
+          size={appearance === 'default' ? 'default' : 'icon'}
+        >
           <Upload className='size-4' />
-          Import contacts
+          {appearance === 'default' ? 'Import contacts' : null}
         </Button>
       </SheetTrigger>
       <SheetContent className='w-4xl! max-w-4xl!'>

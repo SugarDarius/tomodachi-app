@@ -60,7 +60,7 @@ export default async function Page({
         </Breadcrumb>
         <div className='flex flex-row items-center gap-2'>
           <Suspense>
-            <ImportContactsButtonSuspense params={params} />
+            <ImportContactsButtonSuspense params={params} appearance='icon' />
           </Suspense>
           <Suspense fallback={<ContactsListActionSkeleton />}>
             <ContactsListActionSuspense params={params} />

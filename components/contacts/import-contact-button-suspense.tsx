@@ -7,9 +7,11 @@ export const ImportContactsButtonSkeleton = () => (
 
 export async function ImportContactsButtonSuspense({
   params,
+  appearance = 'default',
 }: {
   params: Promise<{ listId: string }>
+  appearance?: 'default' | 'icon'
 }) {
   const { listId } = await params
-  return <ImportContactsButton listId={listId} />
+  return <ImportContactsButton listId={listId} appearance={appearance} />
 }
