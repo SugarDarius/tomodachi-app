@@ -1,6 +1,7 @@
 'use client'
 
 import { useTransition, useState, useCallback } from 'react'
+import { toast } from 'sonner'
 
 import {
   AlertDialog,
@@ -41,7 +42,11 @@ export function DeleteContactsDialog({
       })
       if (!result.success) {
         console.error(result.error)
-        // TODO: add toast here
+        startTransition(() => {
+          toast.error(
+            `An error occurred while deleting the contact${contactIds.length === 1 ? '' : 's'}. Please try again.`
+          )
+        })
       } else {
         startTransition(() => {
           setOpen(false)

@@ -2,6 +2,7 @@
 
 import { usePathname } from 'next/navigation'
 import { useTransition, useCallback, useState } from 'react'
+import { toast } from 'sonner'
 
 import { type ContactsList } from '~/schema'
 import { capitalize } from '~/utils/chars'
@@ -41,7 +42,9 @@ export function DeleteContactListDialog({
 
       if (!result.success) {
         console.error(result.error)
-        // TODO: add toast here
+        startTransition(() => {
+          toast.error('Failed to delete contact list. Please try again.')
+        })
       } else {
         startTransition(() => {
           setOpen(false)

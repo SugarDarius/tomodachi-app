@@ -1,6 +1,7 @@
 'use client'
 
 import { useActionState, useState } from 'react'
+import { toast } from 'sonner'
 
 import { type ContactsList } from '~/schema'
 import { Button } from '~/components/ui/button'
@@ -36,6 +37,8 @@ export function RenameContactListDialog({
     const result = await renameContactList(formData)
     if (result?.success) {
       setOpen(false)
+    } else {
+      toast.error('Failed to rename contact list. Please try again.')
     }
     return result
   }, null)

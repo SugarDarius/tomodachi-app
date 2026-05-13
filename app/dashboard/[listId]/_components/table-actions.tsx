@@ -63,9 +63,14 @@ export function TableActions({
             {pageIndex} / {totalPages}
           </span>
         </div>
-        <Button variant='outline' onClick={onRefresh}>
-          <RefreshCw className='size-4' />
-        </Button>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button variant='outline' onClick={onRefresh}>
+              <RefreshCw className='size-4' />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>Refresh contacts</TooltipContent>
+        </Tooltip>
       </div>
     </div>
   )
