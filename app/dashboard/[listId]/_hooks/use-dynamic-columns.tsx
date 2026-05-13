@@ -46,9 +46,14 @@ export function useDynamicColumns({ columnMap }: { columnMap: ColumnMapping }) {
 
     const columns: ColumnDef<Contact>[] = [
       {
-        id: 'actions',
+        id: 'select',
         header: () => (
-          <div className='flex items-center space-x-2'>
+          <div className='flex items-center px-2'>
+            <Checkbox />
+          </div>
+        ),
+        cell: ({ row }) => (
+          <div className='flex items-center px-2'>
             <Checkbox />
           </div>
         ),
@@ -59,7 +64,10 @@ export function useDynamicColumns({ columnMap }: { columnMap: ColumnMapping }) {
             id: meta.value,
             accessorKey: meta.accessorKey,
             header: ({ column }) => (
-              <TableColumnHeader column={column} title={meta.value} />
+              <TableColumnHeader
+                column={column}
+                title={meta.value.toLowerCase()}
+              />
             ),
           }) as ColumnDef<Contact>
       ),
@@ -67,7 +75,7 @@ export function useDynamicColumns({ columnMap }: { columnMap: ColumnMapping }) {
         id: 'createdAt',
         accessorKey: 'createdAt',
         header: ({ column }) => (
-          <TableColumnHeader column={column} title='Created At' />
+          <TableColumnHeader column={column} title='created at' />
         ),
         cell: ({ row }) => formatDateAsEnUs(row.original.createdAt),
       },
@@ -77,11 +85,15 @@ export function useDynamicColumns({ columnMap }: { columnMap: ColumnMapping }) {
         header: ({ column }) => (
           <TableColumnHeader
             column={column}
-            title='Updated At'
-            className='justify-end'
+            title='updated at'
+            className='justify-end [&>button]:pr-0'
           />
         ),
-        cell: ({ row }) => formatDateAsEnUs(row.original.updatedAt),
+        cell: ({ row }) => (
+          <span className='inline-flex justify-end w-full'>
+            {formatDateAsEnUs(row.original.updatedAt)}
+          </span>
+        ),
       },
     ]
 

@@ -66,21 +66,7 @@ export function ContactsTable({
             <TableBody>
               {({ row }) => (
                 <TableRow key={row.id} row={row} className='cursor-pointer'>
-                  {({ cell }) =>
-                    cell.column.id === 'actions' ? (
-                      <TableCellRaw key={cell.id}>
-                        <Checkbox />
-                      </TableCellRaw>
-                    ) : (
-                      <TableCell
-                        cell={cell}
-                        key={cell.id}
-                        className={cn({
-                          'text-right': cell.column.id === 'updatedAt',
-                        })}
-                      />
-                    )
-                  }
+                  {({ cell }) => <TableCell cell={cell} key={cell.id} />}
                 </TableRow>
               )}
             </TableBody>
