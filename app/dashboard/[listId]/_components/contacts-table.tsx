@@ -78,13 +78,15 @@ export function ContactsTable({
             ? ` in ${formatNumberWithCommas(page.totalPages)} pages`
             : ''}
         </span>
-        <div className='flex items-center gap-2'>
+        <div className='flex items-center gap-1'>
           <Button onClick={handlePrevious} size='sm' disabled={!canGoPrevious}>
             <ArrowLeft className='size-4' />
           </Button>
-          <span className='text-sm text-muted-foreground'>
-            {page.pageIndex} / {page.totalPages}
-          </span>
+          <div className='flex items-center w-[60px] justify-center'>
+            <span className='text-sm text-muted-foreground'>
+              {page.pageIndex} / {page.totalPages}
+            </span>
+          </div>
           <Button onClick={handleNext} size='sm' disabled={!canGoNext}>
             <ArrowRight className='size-4' />
           </Button>
