@@ -2,6 +2,7 @@ import { create } from 'zustand'
 
 /**
  * Sidecar store to manage the selected rows in the table.
+ * Allows to trigger bulk actions on the selected rows like deleting.
  */
 export type TableRowsState = {
   rows: Map<string, { selected: boolean }>

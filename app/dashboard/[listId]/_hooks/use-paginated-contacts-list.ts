@@ -54,10 +54,12 @@ export function usePaginatedContactsList({
   listId,
   initialPage,
   initialPageIndex = DEFAULT_PAGE_INDEX,
+  onPageChange,
 }: {
   listId: string
   initialPage: ContactsListMembersPage
   initialPageIndex?: number
+  onPageChange?: () => void
 }) {
   const [pageIndex, setPageIndex] = useState(initialPageIndex)
 
@@ -78,12 +80,14 @@ export function usePaginatedContactsList({
   const handleNext = () => {
     if (page.canGoNext) {
       setPageIndex(pageIndex + 1)
+      onPageChange?.()
     }
   }
 
   const handlePrevious = () => {
     if (page.canGoPrevious) {
       setPageIndex(pageIndex - 1)
+      onPageChange?.()
     }
   }
 

@@ -19,6 +19,7 @@ import { ImportContactsButton } from '~/components/contacts/import-contacts-butt
 import { type ContactsListMembersPage } from '../_lib/contacts-list'
 
 import { useTableRowsStore } from '../_stores/table-rows'
+
 import { usePaginatedContactsList } from '../_hooks/use-paginated-contacts-list'
 import { useDynamicColumns } from '../_hooks/use-dynamic-columns'
 
@@ -31,10 +32,14 @@ export function ContactsTable({
   listId: string
   initialPage: ContactsListMembersPage
 }) {
+  const { isRowSelected, unSelectAll } = useTableRowsStore()
   const { page, handlePrevious, handleNext, canGoPrevious, canGoNext } =
-    usePaginatedContactsList({ listId, initialPage })
+    usePaginatedContactsList({
+      listId,
+      initialPage,
+      onPageChange: () => unSelectAll(),
+    })
   const columns = useDynamicColumns({ columnMap: page.columnMap })
-  const { isRowSelected } = useTableRowsStore()
 
   if (page.totalCount === 0) {
     return (
@@ -49,7 +54,7 @@ export function ContactsTable({
 
   return (
     <div className='flex flex-col gap-2 flex-1 overflow-hidden'>
-      <TableActions />
+      <TableActions listId={listId} />
       <div className='flex-1 overflow-hidden'>
         <div className='w-full h-full overflow-auto'>
           <TableProvider data={page.contacts} columns={columns}>
