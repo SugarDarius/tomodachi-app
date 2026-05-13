@@ -77,7 +77,11 @@ export async function getContactsListMembersPaginated({
       .from(contactsListMembers)
       .innerJoin(contacts, eq(contactsListMembers.contactId, contacts.id))
       .where(eq(contactsListMembers.listId, id))
-      .orderBy(desc(contactsListMembers.addedAt))
+      // 👇🏻 Pagination tie breaker to ensure consistent pagination
+      .orderBy(
+        desc(contactsListMembers.addedAt),
+        desc(contactsListMembers.contactId)
+      )
       .limit($pageSize)
       .offset(($pageIndex - 1) * $pageSize),
     db
