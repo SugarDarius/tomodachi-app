@@ -3,9 +3,6 @@
 import { ContactIcon, ArrowLeft, ArrowRight } from 'lucide-react'
 
 import { formatNumberWithCommas } from '~/utils/format-number'
-import { cn } from '~/lib/utils'
-
-import { TableCell as TableCellRaw } from '~/components/ui/table'
 import {
   TableBody,
   TableCell,
@@ -22,7 +19,6 @@ import { type ContactsListMembersPage } from '../_lib/contacts-list'
 
 import { usePaginatedContactsList } from '../_hooks/use-paginated-contacts-list'
 import { useDynamicColumns } from '../_hooks/use-dynamic-columns'
-import { Checkbox } from '~/components/ui/checkbox'
 
 export function ContactsTable({
   listId,
@@ -40,7 +36,7 @@ export function ContactsTable({
       <div className='flex flex-col gap-2 flex-1 items-center justify-center'>
         <div className='flex flex-col gap-2 items-center justify-center'>
           <ContactIcon className='size-10' />
-          <ImportContactsButton listId={listId} />
+          <ImportContactsButton listId={listId} shortcut={false} />
         </div>
       </div>
     )

@@ -17,6 +17,7 @@ import {
 import { Field, FieldGroup } from '~/components/ui/field'
 import { Input } from '~/components/ui/input'
 import { Label } from '~/components/ui/label'
+import { Kbd, KbdGroup } from '~/components/ui/kbd'
 
 import { renameContactList, type RenameContactListResult } from './actions'
 
@@ -68,10 +69,16 @@ export function RenameContactListDialog({
             <DialogClose asChild>
               <Button type='button' variant='outline'>
                 Cancel
+                <KbdGroup>
+                  <Kbd className='rounded-sm border border-border'>Esc</Kbd>
+                </KbdGroup>
               </Button>
             </DialogClose>
             <Button type='submit' disabled={isPending}>
               Rename
+              <KbdGroup>
+                <Kbd className='rounded-sm border border-border'>⏎</Kbd>
+              </KbdGroup>
             </Button>
           </DialogFooter>
         </form>

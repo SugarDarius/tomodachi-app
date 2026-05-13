@@ -8,10 +8,18 @@ export const ImportContactsButtonSkeleton = () => (
 export async function ImportContactsButtonSuspense({
   params,
   appearance = 'default',
+  shortcut = true,
 }: {
   params: Promise<{ listId: string }>
   appearance?: 'default' | 'icon'
+  shortcut?: boolean
 }) {
   const { listId } = await params
-  return <ImportContactsButton listId={listId} appearance={appearance} />
+  return (
+    <ImportContactsButton
+      listId={listId}
+      appearance={appearance}
+      shortcut={shortcut}
+    />
+  )
 }

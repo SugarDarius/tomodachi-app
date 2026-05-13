@@ -2,6 +2,7 @@
 
 import { useState, useMemo, useCallback } from 'react'
 import { Upload } from 'lucide-react'
+import { useHotkeys } from 'react-hotkeys-hook'
 
 import { Button } from '~/components/ui/button'
 import { Spinner } from '~/components/ui/spinner'
@@ -18,6 +19,8 @@ import {
   DropzoneContent,
   DropzoneEmptyState,
 } from '~/components/kibo-ui/dropzone'
+import { Kbd, KbdGroup } from '~/components/ui/kbd'
+
 import { useImportContacts } from './import-contacts-provider'
 import {
   ColumnsSelector,
@@ -28,9 +31,11 @@ import {
 export function ImportContactsDialog({
   listId,
   appearance = 'default',
+  shortcut = true,
 }: {
   listId: string
   appearance?: 'default' | 'icon'
+  shortcut?: boolean
 }) {
   const {
     activeContactImport,
@@ -121,6 +126,17 @@ export function ImportContactsDialog({
     }
   }, [scoped, submitActiveContactImport])
 
+  useHotkeys(
+    'I',
+    (e) => {
+      e.preventDefault()
+      if (!open) {
+        setOpen(true)
+      }
+    },
+    { enabled: shortcut }
+  )
+
   return (
     <Sheet open={open} onOpenChange={handleOpenChange}>
       <SheetTrigger asChild>
@@ -129,7 +145,14 @@ export function ImportContactsDialog({
           size={appearance === 'default' ? 'default' : 'icon'}
         >
           <Upload className='size-4' />
-          {appearance === 'default' ? 'Import contacts' : null}
+          {appearance === 'default' ? (
+            <>
+              Import contacts
+              <KbdGroup>
+                <Kbd className='rounded-sm border border-border'>I</Kbd>
+              </KbdGroup>
+            </>
+          ) : null}
         </Button>
       </SheetTrigger>
       <SheetContent className='w-4xl! max-w-4xl!'>
