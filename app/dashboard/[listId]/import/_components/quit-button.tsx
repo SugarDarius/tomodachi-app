@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { Undo } from 'lucide-react'
+import { Undo2 } from 'lucide-react'
 
 import { Button } from '~/components/ui/button'
 import { Skeleton } from '~/components/ui/skeleton'
@@ -18,7 +18,7 @@ export async function QuitButton({
   return (
     <Button variant='secondary' asChild size='icon'>
       <Link href={`/dashboard/${listId}`}>
-        <Undo className='size-4' />
+        <Undo2 className='size-4' />
       </Link>
     </Button>
   )
