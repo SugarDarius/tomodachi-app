@@ -1,8 +1,8 @@
 import { ImportContactsProvider } from '~/components/contacts/import-contacts-provider'
 
 import { RealtimeProvider } from './_providers/realtime-provider'
-import { SidebarInset, SidebarProvider } from '~/components/ui/sidebar'
 
+import { SidebarInset, SidebarProvider } from '~/components/ui/sidebar'
 import { AppSidebar } from './_components/app-sidebar'
 
 export default function Layout({ children }: { children: React.ReactNode }) {

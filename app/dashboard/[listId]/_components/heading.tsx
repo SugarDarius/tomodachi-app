@@ -29,7 +29,7 @@ export async function Heading({
         Import or manage contacts in the{' '}
         <span className='font-semibold text-foreground'>
           &quot;{capitalize(list.name)}&quot;
-        </span>
+        </span>{' '}
         list
       </p>
     </div>
