@@ -37,7 +37,7 @@ export default async function Page() {
             </BreadcrumbItem>
           </BreadcrumbList>
         </Breadcrumb>
-        <CreateContactListDialog triggerVariant='default' />
+        <CreateContactListDialog triggerVariant='default' shortcut={false} />
       </div>
       <div className='flex flex-col gap-4'>
         <div className='flex flex-col'>
