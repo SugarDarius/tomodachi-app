@@ -1,7 +1,16 @@
 import 'server-only'
 import { cacheTag } from 'next/cache'
 
-import { count, desc, eq, getTableColumns, isNull, and } from 'drizzle-orm'
+import {
+  count,
+  desc,
+  eq,
+  getTableColumns,
+  ilike,
+  isNull,
+  and,
+  type SQL,
+} from 'drizzle-orm'
 
 import { db } from '~/lib/db'
 import {
@@ -59,6 +68,7 @@ export async function getContactsListMembersPaginated({
   id,
   pageIndex = DEFAULT_PAGE_INDEX,
   pageSize = DEFAULT_PAGE_SIZE,
+  searchQuery,
 }: {
   id: string
   pageIndex?: number
@@ -68,16 +78,25 @@ export async function getContactsListMembersPaginated({
   const $pageIndex = Math.max(1, Math.floor(pageIndex))
   const $pageSize = Math.min(MAX_PAGE_SIZE, Math.max(1, Math.floor(pageSize)))
 
+  // 👇🏻 Build dynamic SQL filters based on the search query
+  // to handle the search functionality
+  const filters: SQL[] = [eq(contactsListMembers.listId, id)]
+  if (searchQuery) {
+    filters.push(ilike(contacts.email, `%${searchQuery}%`))
+  }
+  const whereClause = and(...filters)!
+
   const [countRowResult, contactsPage, list] = await Promise.all([
     db
       .select({ totalCount: count() })
       .from(contactsListMembers)
-      .where(eq(contactsListMembers.listId, id)),
+      .innerJoin(contacts, eq(contactsListMembers.contactId, contacts.id))
+      .where(whereClause),
     db
       .select(getTableColumns(contacts))
       .from(contactsListMembers)
       .innerJoin(contacts, eq(contactsListMembers.contactId, contacts.id))
-      .where(eq(contactsListMembers.listId, id))
+      .where(whereClause)
       // 👇🏻 Pagination tie breaker to ensure consistent pagination
       .orderBy(
         desc(contactsListMembers.addedAt),

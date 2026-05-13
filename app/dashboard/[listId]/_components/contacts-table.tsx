@@ -1,6 +1,6 @@
 'use client'
 
-import { ContactIcon, ArrowLeft, ArrowRight } from 'lucide-react'
+import { ContactIcon, ArrowLeft, ArrowRight, SearchAlert } from 'lucide-react'
 
 import { type Contact } from '~/schema'
 import { formatNumberWithCommas } from '~/utils/format-number'
@@ -54,17 +54,6 @@ export function ContactsTable({
   })
   const columns = useDynamicColumns({ columnMap: page.columnMap })
 
-  if (page.totalCount === 0) {
-    return (
-      <div className='flex flex-col gap-2 flex-1 items-center justify-center'>
-        <div className='flex flex-col gap-2 items-center justify-center'>
-          <ContactIcon className='size-10' />
-          <ImportContactsButton listId={listId} shortcut={false} />
-        </div>
-      </div>
-    )
-  }
-
   return (
     <div className='flex flex-col gap-2 flex-1 overflow-hidden'>
       <TableActions
@@ -75,79 +64,111 @@ export function ContactsTable({
         searchQuery={searchQuery}
         updateSearchQuery={handleUpdateSearchQuery}
       />
-      <div className='flex-1 overflow-hidden'>
-        <div className='w-full h-full overflow-auto'>
-          <TableProvider data={page.contacts} columns={columns}>
-            <TableHeader>
-              {({ headerGroup }) => (
-                <TableHeaderGroup
-                  headerGroup={headerGroup}
-                  key={headerGroup.id}
+      {page.totalCount <= 0 ? (
+        <div className='flex flex-col gap-2 flex-1 items-center justify-center'>
+          <div className='flex flex-col gap-8 items-center justify-center'>
+            {searchQuery !== '' ? (
+              <>
+                <SearchAlert className='size-24 text-muted-foreground' />
+                <p className='text-lg text-muted-foreground'>
+                  We couldn&apos;t find any contacts matching &quot;
+                  {searchQuery}&quot;
+                </p>
+                <Button
+                  variant='outline'
+                  size='lg'
+                  onClick={() => handleUpdateSearchQuery('')}
                 >
-                  {({ header }) => (
-                    <TableHead header={header} key={header.id} />
-                  )}
-                </TableHeaderGroup>
-              )}
-            </TableHeader>
-            <TableBody>
-              {({ row }) => {
-                const contact = row.original as Contact
-                const selected = isRowSelected(contact.id)
-
-                return (
-                  <ContactDialog
-                    key={row.id}
-                    listId={listId}
-                    contact={contact}
-                    refresh={handleRefresh}
-                  >
-                    <TableRow
-                      key={row.id}
-                      row={row}
-                      className='cursor-pointer'
-                      selected={selected}
+                  Clear search
+                </Button>
+              </>
+            ) : (
+              <>
+                <ContactIcon className='size-24 text-muted-foreground' />
+                <ImportContactsButton listId={listId} shortcut={false} />
+              </>
+            )}
+          </div>
+        </div>
+      ) : (
+        <>
+          <div className='flex-1 overflow-hidden'>
+            <div className='w-full h-full overflow-auto'>
+              <TableProvider data={page.contacts} columns={columns}>
+                <TableHeader>
+                  {({ headerGroup }) => (
+                    <TableHeaderGroup
+                      headerGroup={headerGroup}
+                      key={headerGroup.id}
                     >
-                      {({ cell }) => <TableCell cell={cell} key={cell.id} />}
-                    </TableRow>
-                  </ContactDialog>
-                )
-              }}
-            </TableBody>
-          </TableProvider>
-        </div>
-      </div>
-      <div className='flex items-center justify-between p-4 flex-none border-t border-border'>
-        <span className='text-sm text-muted-foreground'>
-          {page.totalCount === 1
-            ? '1 contact'
-            : `${formatNumberWithCommas(page.totalCount)} contacts`}
-          {page.totalPages > 1
-            ? ` in ${formatNumberWithCommas(page.totalPages)} pages`
-            : ''}
-        </span>
-        <div className='flex items-center gap-1'>
-          <Button
-            onClick={handlePrevious}
-            size='sm'
-            variant='secondary'
-            disabled={!canGoPrevious}
-          >
-            <ArrowLeft className='size-4' />
-            <span className='text-sm'>Previous</span>
-          </Button>
+                      {({ header }) => (
+                        <TableHead header={header} key={header.id} />
+                      )}
+                    </TableHeaderGroup>
+                  )}
+                </TableHeader>
+                <TableBody>
+                  {({ row }) => {
+                    const contact = row.original as Contact
+                    const selected = isRowSelected(contact.id)
 
-          <Button
-            onClick={handleNext}
-            size='sm'
-            variant='secondary'
-            disabled={!canGoNext}
-          >
-            <span className='text-sm'>Next</span>
-            <ArrowRight className='size-4' />
-          </Button>
-        </div>
-      </div>
+                    return (
+                      <ContactDialog
+                        key={row.id}
+                        listId={listId}
+                        contact={contact}
+                        refresh={handleRefresh}
+                      >
+                        <TableRow
+                          key={row.id}
+                          row={row}
+                          className='cursor-pointer'
+                          selected={selected}
+                        >
+                          {({ cell }) => (
+                            <TableCell cell={cell} key={cell.id} />
+                          )}
+                        </TableRow>
+                      </ContactDialog>
+                    )
+                  }}
+                </TableBody>
+              </TableProvider>
+            </div>
+          </div>
+          <div className='flex items-center justify-between p-4 flex-none border-t border-border'>
+            <span className='text-sm text-muted-foreground'>
+              {page.totalCount === 1
+                ? '1 contact'
+                : `${formatNumberWithCommas(page.totalCount)} contacts`}
+              {page.totalPages > 1
+                ? ` in ${formatNumberWithCommas(page.totalPages)} pages`
+                : ''}
+            </span>
+            <div className='flex items-center gap-1'>
+              <Button
+                onClick={handlePrevious}
+                size='sm'
+                variant='secondary'
+                disabled={!canGoPrevious}
+              >
+                <ArrowLeft className='size-4' />
+                <span className='text-sm'>Previous</span>
+              </Button>
+
+              <Button
+                onClick={handleNext}
+                size='sm'
+                variant='secondary'
+                disabled={!canGoNext}
+              >
+                <span className='text-sm'>Next</span>
+                <ArrowRight className='size-4' />
+              </Button>
+            </div>
+          </div>
+        </>
+      )}
     </div>
   )
 }

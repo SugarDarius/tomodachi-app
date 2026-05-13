@@ -1,5 +1,6 @@
 'use client'
 
+import { useEffect, useState } from 'react'
 import { Plus, RefreshCw, Trash, Search, XIcon } from 'lucide-react'
 
 import { Button } from '~/components/ui/button'
@@ -14,6 +15,8 @@ import {
   InputGroupButton,
   InputGroupInput,
 } from '~/components/ui/input-group'
+
+import { useDebouncedFunction } from '~/hooks/use-debounced-function'
 
 import { useTableRowsStore } from '../_stores/table-rows'
 import { DeleteContactsDialog } from './delete-contacts-dialog'
@@ -33,18 +36,34 @@ export function TableActions({
   refresh: () => void
   updateSearchQuery: (query: string) => void
 }) {
+  const [query, setQuery] = useState(searchQuery)
   const { getSelectedRowIds } = useTableRowsStore()
 
   const selectedRowIds = getSelectedRowIds()
   const numberOfSelectedRows = selectedRowIds.length
 
+  const setQueryDebounced = useDebouncedFunction((query: string) => {
+    updateSearchQuery(query)
+  }, 50)
+
   const handleResetSearch = () => {
     updateSearchQuery('')
+    setQuery('')
   }
 
-  const handleUpdateSearchQuery = (query: string) => {
-    updateSearchQuery(query)
+  const onInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value
+
+    setQuery(value)
+    setQueryDebounced(value)
   }
+
+  useEffect(() => {
+    if (searchQuery === '' && query !== '') {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setQuery('')
+    }
+  }, [searchQuery, query])
 
   return (
     <div className='flex items-center justify-between py-2 flex-none border-b border-border'>
@@ -65,20 +84,22 @@ export function TableActions({
           <InputGroupInput
             placeholder='Search contacts by email…'
             className='w-56'
-            value={searchQuery}
-            onChange={(e) => handleUpdateSearchQuery(e.target.value)}
+            value={query}
+            onChange={onInputChange}
           />
           <InputGroupAddon>
             <Search className='size-3 text-muted-foreground' />
           </InputGroupAddon>
           <InputGroupAddon align='inline-end'>
-            <InputGroupButton
-              variant='secondary'
-              size='icon-xs'
-              onClick={handleResetSearch}
-            >
-              <XIcon className='size-3 text-muted-foreground' />
-            </InputGroupButton>
+            {query !== '' ? (
+              <InputGroupButton
+                variant='secondary'
+                size='icon-xs'
+                onClick={handleResetSearch}
+              >
+                <XIcon className='size-3 text-muted-foreground' />
+              </InputGroupButton>
+            ) : null}
           </InputGroupAddon>
         </InputGroup>
       </div>

@@ -15,7 +15,6 @@ import { useEffect } from 'react'
 
 import { type ColumnMapping, type Contact } from '~/schema'
 import { useSafeSWR, preloadSafeSWR } from '~/hooks/use-safe-swr'
-import { useDebounce } from '~/hooks/use-debounce'
 
 import { type ContactsListMembersPage } from '../_lib/contacts-list'
 
@@ -55,7 +54,7 @@ const paginatedContactsListDecoder = object({
 /**
  * Custom hook to handle client-side hydration of the data with
  * - pagination (shareable in the URL state)
- * - search query (debounced / shareable in the URL state)
+ * - search query (shareable in the URL state)
  * - data preloading (to avoid flickering)
  */
 export function usePaginatedContactsList({
@@ -77,17 +76,19 @@ export function usePaginatedContactsList({
   )
   const [searchQuery, setSearchQuery] = useQueryState(
     'search',
-    parseAsString.withDefault(initialSearchQuery)
+    parseAsString
+      .withOptions({
+        clearOnDefault: true,
+      })
+      .withDefault(initialSearchQuery)
   )
-
-  const debouncedSearchQuery = useDebounce(searchQuery, 500)
 
   const {
     data: page,
     error,
     mutate,
   } = useSafeSWR<ContactsListMembersPage>(
-    `/api/contacts/get/${listId}?pageIndex=${pageIndex}&pageSize=${DEFAULT_PAGE_SIZE}&searchQuery=${debouncedSearchQuery}`,
+    `/api/contacts/get/${listId}?pageIndex=${pageIndex}&pageSize=${DEFAULT_PAGE_SIZE}&searchQuery=${searchQuery}`,
     paginatedContactsListDecoder,
     {
       initialData: initialPage,
@@ -118,16 +119,17 @@ export function usePaginatedContactsList({
 
   const handleUpdateSearchQuery = (query: string) => {
     setSearchQuery(query)
+    setPageIndex(DEFAULT_PAGE_INDEX)
   }
 
   useEffect(() => {
     if (page.canGoNext) {
       preloadSafeSWR(
-        `/api/contacts/get/${listId}?pageIndex=${pageIndex + 1}&pageSize=${DEFAULT_PAGE_SIZE}`,
+        `/api/contacts/get/${listId}?pageIndex=${pageIndex + 1}&pageSize=${DEFAULT_PAGE_SIZE}&searchQuery=${searchQuery}`,
         paginatedContactsListDecoder
       )
     }
-  }, [page.canGoNext, listId, pageIndex])
+  }, [page.canGoNext, listId, pageIndex, searchQuery])
 
   return {
     error,
