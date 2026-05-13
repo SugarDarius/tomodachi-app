@@ -12,11 +12,13 @@ export type TableRowsState = {
   toggleRow: (id: string, selected: boolean) => void
   isRowSelected: (id: string) => boolean
   registerRow: (id: string) => void
+  getSelectedRowIds: () => string[]
 }
 
 export const useTableRowsStore = create<TableRowsState>()((set, get) => ({
   rows: new Map(),
   allSelected: false,
+  numberOfSelectedRows: 0,
   selectAll: () => {
     const rows = get().rows
 
@@ -24,7 +26,10 @@ export const useTableRowsStore = create<TableRowsState>()((set, get) => ({
       rows.set(id, { selected: true })
     }
 
-    set({ rows: new Map(rows), allSelected: true })
+    set({
+      rows: new Map(rows),
+      allSelected: true,
+    })
   },
   unSelectAll: () => {
     const rows = get().rows
@@ -38,11 +43,19 @@ export const useTableRowsStore = create<TableRowsState>()((set, get) => ({
   toggleRow: (id: string, selected: boolean) => {
     const rows = get().rows
     const row = rows.get(id)
+
     if (row) {
       rows.set(id, { selected })
     }
-    const allSelected = rows.entries().every(([, { selected }]) => selected)
-    set({ rows: new Map(rows), allSelected })
+
+    const numberOfSelectedRows = rows
+      .entries()
+      .reduce((acc, [, { selected }]) => (selected ? acc + 1 : acc), 0)
+
+    set({
+      rows: new Map(rows),
+      allSelected: numberOfSelectedRows === rows.size,
+    })
   },
   isRowSelected: (id: string) => {
     const rows = get().rows
@@ -52,9 +65,17 @@ export const useTableRowsStore = create<TableRowsState>()((set, get) => ({
   },
   registerRow: (id: string) => {
     const rows = get().rows
+
     if (!rows.has(id)) {
       rows.set(id, { selected: false })
       set({ rows: new Map(rows) })
     }
+  },
+  getSelectedRowIds: () => {
+    const rows = get().rows
+
+    return Array.from(rows.entries())
+      .filter(([, { selected }]) => selected)
+      .map(([id]) => id)
   },
 }))

@@ -4,17 +4,18 @@ import { useActionState } from 'react'
 
 import { type ContactsList } from '~/schema'
 import { capitalize } from '~/utils/chars'
-import { Button } from '~/components/ui/button'
+
 import {
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from '~/components/ui/dialog'
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '~/components/ui/alert-dialog'
 import { Kbd, KbdGroup } from '~/components/ui/kbd'
 
 import { deleteContactList, type DeleteContactListResult } from './actions'
@@ -32,39 +33,46 @@ export function DeleteContactListDialog({
   >(async (_prevState, formData) => deleteContactList(formData), null)
 
   return (
-    <Dialog>
-      <DialogTrigger asChild>{children}</DialogTrigger>
-      <DialogContent className='sm:max-w-sm'>
+    <AlertDialog>
+      <AlertDialogTrigger asChild>{children}</AlertDialogTrigger>
+      <AlertDialogContent className='sm:max-w-sm'>
         <form action={formAction} className='space-y-4'>
           <input type='hidden' name='id' value={list.id} />
-          <DialogHeader>
-            <DialogTitle>Delete contact list</DialogTitle>
-            <DialogDescription>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete contact list</AlertDialogTitle>
+            <AlertDialogDescription>
               Are you sure you want to delete{' '}
               <span className='font-medium text-foreground'>
                 {capitalize(list.name)}
               </span>
-              ? This action cannot be undone.
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter className='border-0'>
-            <DialogClose asChild>
-              <Button type='button' variant='outline'>
-                Cancel
-                <KbdGroup>
-                  <Kbd className='rounded-sm border border-border'>Esc</Kbd>
-                </KbdGroup>
-              </Button>
-            </DialogClose>
-            <Button type='submit' variant='destructive' disabled={isPending}>
+              ?{' '}
+              <span className='font-semibold text-foreground'>
+                This action cannot be undone.
+              </span>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter className='border-0'>
+            <AlertDialogCancel>
+              Cancel
+              <KbdGroup>
+                <Kbd className='rounded-sm border border-border'>Esc</Kbd>
+              </KbdGroup>
+            </AlertDialogCancel>
+            <AlertDialogAction
+              type='submit'
+              disabled={isPending}
+              variant='destructive'
+            >
               Delete
               <KbdGroup>
-                <Kbd className='rounded-sm border border-border'>⏎</Kbd>
+                <Kbd className='rounded-sm border bg-destructive/10 text-destructive border-destructive/20'>
+                  ⏎
+                </Kbd>
               </KbdGroup>
-            </Button>
-          </DialogFooter>
+            </AlertDialogAction>
+          </AlertDialogFooter>
         </form>
-      </DialogContent>
-    </Dialog>
+      </AlertDialogContent>
+    </AlertDialog>
   )
 }

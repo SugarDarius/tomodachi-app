@@ -1,6 +1,6 @@
 'use client'
 
-import { Plus } from 'lucide-react'
+import { Plus, RefreshCw } from 'lucide-react'
 
 import { Button } from '~/components/ui/button'
 import {
@@ -10,9 +10,18 @@ import {
 } from '~/components/ui/tooltip'
 
 import { useTableRowsStore } from '../_stores/table-rows'
+import { DeleteContactsDialog } from './delete-contacts-dialog'
 
-export function TableActions({ listId }: { listId: string }) {
-  const { allSelected } = useTableRowsStore()
+export function TableActions({
+  listId,
+  onRefresh,
+}: {
+  listId: string
+  onRefresh: () => void
+}) {
+  const { getSelectedRowIds } = useTableRowsStore()
+
+  const selectedRowIds = getSelectedRowIds()
 
   return (
     <div className='flex items-center justify-between py-2 flex-none border-b border-border'>
@@ -30,7 +39,18 @@ export function TableActions({ listId }: { listId: string }) {
           <TooltipContent>Coming soon</TooltipContent>
         </Tooltip>
       </div>
-      <div className='flex items-center gap-2'></div>
+      <div className='flex items-center gap-2'>
+        {selectedRowIds.length > 0 ? (
+          <DeleteContactsDialog
+            listId={listId}
+            selectedRowIds={selectedRowIds}
+            refresh={onRefresh}
+          />
+        ) : null}
+        <Button variant='outline' onClick={onRefresh}>
+          <RefreshCw className='size-4' />
+        </Button>
+      </div>
     </div>
   )
 }

@@ -33,12 +33,18 @@ export function ContactsTable({
   initialPage: ContactsListMembersPage
 }) {
   const { isRowSelected, unSelectAll } = useTableRowsStore()
-  const { page, handlePrevious, handleNext, canGoPrevious, canGoNext } =
-    usePaginatedContactsList({
-      listId,
-      initialPage,
-      onPageChange: () => unSelectAll(),
-    })
+  const {
+    page,
+    handlePrevious,
+    handleNext,
+    handleRefresh,
+    canGoPrevious,
+    canGoNext,
+  } = usePaginatedContactsList({
+    listId,
+    initialPage,
+    onPageChange: () => unSelectAll(),
+  })
   const columns = useDynamicColumns({ columnMap: page.columnMap })
 
   if (page.totalCount === 0) {
@@ -54,7 +60,7 @@ export function ContactsTable({
 
   return (
     <div className='flex flex-col gap-2 flex-1 overflow-hidden'>
-      <TableActions listId={listId} />
+      <TableActions listId={listId} onRefresh={handleRefresh} />
       <div className='flex-1 overflow-hidden'>
         <div className='w-full h-full overflow-auto'>
           <TableProvider data={page.contacts} columns={columns}>

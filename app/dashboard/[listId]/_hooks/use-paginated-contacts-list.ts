@@ -91,6 +91,10 @@ export function usePaginatedContactsList({
     }
   }
 
+  const handleRefresh = () => {
+    mutate()
+  }
+
   useEffect(() => {
     if (page.canGoNext) {
       preloadSafeSWR(
@@ -101,11 +105,11 @@ export function usePaginatedContactsList({
   }, [page.canGoNext, listId, pageIndex])
 
   return {
-    mutate,
     error,
     page,
     handleNext,
     handlePrevious,
+    handleRefresh,
     canGoNext: page.canGoNext,
     canGoPrevious: page.canGoPrevious,
   }
