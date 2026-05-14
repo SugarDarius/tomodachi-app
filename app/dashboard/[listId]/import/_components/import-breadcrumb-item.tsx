@@ -17,7 +17,7 @@ export async function ImportBreadcrumbItem({
   return (
     <BreadcrumbItem>
       <BreadcrumbLink asChild>
-        <Link href={`/dashboard/${listId}/import`}>Import</Link>
+        <Link href={`/dashboard/${listId}/import`}>Import contacts</Link>
       </BreadcrumbLink>
     </BreadcrumbItem>
   )

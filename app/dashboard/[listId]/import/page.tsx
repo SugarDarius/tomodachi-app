@@ -21,6 +21,10 @@ import {
   ImportBreadcrumbItem,
 } from './_components/import-breadcrumb-item'
 import { QuitButton, QuitButtonSkeleton } from './_components/quit-button'
+import {
+  FileUploaderSkeleton,
+  FileUploaderSuspense,
+} from './_components/file-uploader-suspense'
 
 export default async function Page({
   params,
@@ -68,7 +72,11 @@ export default async function Page({
           <Heading params={params} />
         </Suspense>
       </div>
-      <div className='flex flex-col gap-2 flex-1 overflow-hidden'></div>
+      <div className='flex flex-col gap-2 flex-1 overflow-hidden'>
+        <Suspense fallback={<FileUploaderSkeleton />}>
+          <FileUploaderSuspense params={params} />
+        </Suspense>
+      </div>
     </div>
   )
 }
