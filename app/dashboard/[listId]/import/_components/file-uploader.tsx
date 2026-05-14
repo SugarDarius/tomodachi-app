@@ -6,6 +6,8 @@ import {
   DropzoneEmptyState,
 } from '~/components/kibo-ui/dropzone'
 
+import { ImportStepper } from './import-stepper'
+
 export function FileUploader({ listId }: { listId: string }) {
   return (
     <div className='flex flex-col gap-4 overflow-hidden flex-1'>
@@ -21,7 +23,9 @@ export function FileUploader({ listId }: { listId: string }) {
           <DropzoneContent />
         </Dropzone>
       </div>
-      <div className='flex flex-col gap-2 flex-none'></div>
+      <div className='flex flex-col gap-2 flex-none px-4'>
+        <ImportStepper step='upload' />
+      </div>
     </div>
   )
 }
