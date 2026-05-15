@@ -1,7 +1,7 @@
 import { Readable } from 'node:stream'
 import { head } from '@vercel/blob'
 
-import { FatalError } from 'workflow'
+import { FatalError, sleep } from 'workflow'
 import { parse } from 'csv-parse'
 
 import { and, eq, isNull, sql } from 'drizzle-orm'
@@ -391,10 +391,10 @@ async function prepareImport({
  * If step 2 fails transiently, re-running the batch repeats step 1 idempotently and finishes memberships.
  *
  * Idempotency under chunk retry:
- *  - `ingestContactImportChunk` is itself a `'use step'` Workflow and it may replay an entire
+ *  - `ingestChunk` is itself a `'use step'` Workflow and it may replay an entire
  *   chunk on transient failure.
  *  - The contacts upsert is row-idempotent (`ON CONFLICT DO
- *   UPDATE`); memberships are skip-on-conflict. Counters increment in `ingestContactImportChunk`
+ *   UPDATE`); memberships are skip-on-conflict. Counters increment in `ingestChunk`
  *   per chunk, so a chunk that succeeds halfway and then retries can double-count up to
  *   one `BATCH_UPSERT_SIZE` worth of rows in the counters. That drift is acceptable because the
  *   underlying contact rows are correct and the cursor advances only on full chunk success.
@@ -459,6 +459,7 @@ async function flushBatch({
 
     return { committed: upsertedContacts.length }
   } catch (err) {
+    console.error(err instanceof Error ? err.cause : err)
     const message = err instanceof Error ? err.message : String(err)
     await markImportAsFailed({
       importId,
@@ -611,7 +612,10 @@ async function ingestChunk({
    * Flush the batch to the database and reset the batch.
    */
   const $flushBatch = async () => {
-    if (batch.length === 0) return
+    if (batch.length === 0) {
+      return
+    }
+
     const { committed } = await flushBatch({
       importId,
       tenantId: job.tenantId,
@@ -742,48 +746,6 @@ async function mergeSkipErrors({
   })
 }
 
-/**
- * Orchestrator to ingest chunks in parallel.
- * It creates a bounded parallel pool of ingestion jobs and processes each planned chunk
- * but with a bounded limit at a time (not all chunk at once).
- *
- * | iteration | start | batch chunks' indices |
- * |-----------|-------|-----------------------|
- * | 1         | 0     | [0, 1, 2, 3]          |
- * | 2         | 4     | [4, 5, 6, 7]          |
- * | 3         | 8     | [8, 9, 10, 11]        |
- * | ...       | ...   | ...                   |
- * | n         | ...   | [...n-1, n]           |
- */
-async function ingestChunks({
-  importId,
-  chunkCount,
-}: {
-  importId: string
-  chunkCount: number
-}): Promise<{ skipSamples: ChunkSkipSample[] }> {
-  const skipSamples: ChunkSkipSample[] = []
-
-  for (let start = 0; start < chunkCount; start += PARALLEL_CHUNK_LIMIT) {
-    const end = Math.min(start + PARALLEL_CHUNK_LIMIT, chunkCount)
-    const chunksIndices = Array.from(
-      { length: end - start },
-      (_, i) => start + i
-    )
-
-    const promises = chunksIndices.map((chunkIndex) =>
-      ingestChunk({ importId, chunkIndex })
-    )
-    const ingestions = await Promise.all(promises)
-
-    for (const ingestion of ingestions) {
-      skipSamples.push(...ingestion.skipSamples)
-    }
-  }
-
-  return { skipSamples }
-}
-
 /** Complete the contact import by marking it as completed. */
 async function completeImport({
   importId,
@@ -836,8 +798,43 @@ export async function contactImportWorkflow({
       console.log(`Planning skipped for import ${importId}`)
     }
 
-    // 3️⃣ Let's ingest the chunks in parallel.
-    const { skipSamples } = await ingestChunks({ importId, chunkCount })
+    // 3️⃣ Let's ingest the chunks in parallel with orchestration.
+    const skipSamples: ChunkSkipSample[] = []
+
+    for (let start = 0; start < chunkCount; start += PARALLEL_CHUNK_LIMIT) {
+      const end = Math.min(start + PARALLEL_CHUNK_LIMIT, chunkCount)
+      const chunksIndices = Array.from(
+        { length: end - start },
+        (_, i) => start + i
+      )
+
+      const promises = chunksIndices.map((chunkIndex) =>
+        ingestChunk({ importId, chunkIndex })
+      )
+      const ingestions = await Promise.all(promises)
+
+      for (const ingestion of ingestions) {
+        skipSamples.push(...ingestion.skipSamples)
+      }
+
+      /**
+       * Pace between batches to avoid overloading downstream services.
+       * It creates a bounded parallel pool of ingestion jobs and processes each planned chunk
+       * but with a bounded limit at a time (not all chunk at once).
+       *
+       * | iteration | start | batch chunks' indices |
+       * |-----------|-------|-----------------------|
+       * | 1         | 0     | [0, 1, 2, 3]          |
+       * | 2         | 4     | [4, 5, 6, 7]          |
+       * | 3         | 8     | [8, 9, 10, 11]        |
+       * | ...       | ...   | ...                   |
+       * | n         | ...   | [...n-1, n]           |
+       */
+      if (start + PARALLEL_CHUNK_LIMIT < chunkCount) {
+        await sleep('1s')
+      }
+    }
+
     if (skipSamples.length > 0) {
       await mergeSkipErrors({ importId, skipSamples })
     }
@@ -846,9 +843,6 @@ export async function contactImportWorkflow({
     await completeImport({ importId })
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : String(err)
-    if (err instanceof Error) {
-      console.log('error caused by:', err.cause)
-    }
     await markImportAsFailed({ importId, message })
 
     throw err
