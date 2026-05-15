@@ -6,7 +6,7 @@ import { createContext, useCallback, useContext, useRef, useState } from 'react'
 import { upload } from '@vercel/blob/client'
 import { object, string } from 'decoders'
 
-import { ColumnMapping } from '~/schema'
+import { type ColumnMapping } from '~/schema'
 import {
   type CreateContactImportResponseBody,
   type ContactImportProgress,
