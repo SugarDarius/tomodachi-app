@@ -416,7 +416,7 @@ async function flushBatch({
 
   const dedupedByNormalizedEmail = new Map<string, MappedContactImportRow>()
   for (const row of rows) {
-    dedupedByNormalizedEmail.set(row.email.toLowerCase(), row)
+    dedupedByNormalizedEmail.set(row.email.trim().toLowerCase(), row)
   }
 
   const uniqueRows = [...dedupedByNormalizedEmail.values()]
