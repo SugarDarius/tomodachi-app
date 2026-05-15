@@ -37,19 +37,6 @@ export function useImportContactsJob({
       blobUrl: string,
       originalFilename: string,
       contentType: string,
-      errors: array(
-        taggedUnion('kind', {
-          skip: object({
-            kind: constant('skip'),
-            rowNumber: number,
-            reason: string,
-          }),
-          fatal: object({
-            kind: constant('fatal'),
-            message: string,
-          }),
-        }).refineType<ContactImportErrorEntry>()
-      ),
       columnMap: object({
         canonical: object({
           email: object({ value: string, positionIndex: number }),

@@ -846,6 +846,9 @@ export async function contactImportWorkflow({
     await completeImport({ importId })
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : String(err)
+    if (err instanceof Error) {
+      console.log('error caused by:', err.cause)
+    }
     await markImportAsFailed({ importId, message })
 
     throw err
