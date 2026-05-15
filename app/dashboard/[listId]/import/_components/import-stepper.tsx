@@ -54,7 +54,7 @@ export function ImportStepper({
       <StepItem
         active={step === 'mapping'}
         completed={step === 'import'}
-        title='Map columns'
+        title='Map & Review'
       />
       <StepItem active={step === 'import'} title='Import' />
     </div>
