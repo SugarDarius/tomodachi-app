@@ -17,6 +17,7 @@ import {
 
 import { ImportColumnsMapper } from './import-columns-mapper'
 import { ImportStepper } from './import-stepper'
+import { AlertCircle } from 'lucide-react'
 
 const getFileUploaderStep = (status: FileUploaderStatus) => {
   switch (status) {
@@ -26,6 +27,8 @@ const getFileUploaderStep = (status: FileUploaderStatus) => {
     case 'reading_preview':
     case 'mapping':
       return 'mapping'
+    case 'starting_import_job':
+      return 'import'
     default:
       return 'upload'
   }
@@ -38,6 +41,7 @@ export function FileUploader({ listId }: { listId: string }) {
     columnMapping,
     handleFileChange,
     updateColumnMapping,
+    startImportJob,
   } = useFileUploader({ listId })
 
   const handleFileDrop = useCallback(
@@ -91,8 +95,24 @@ export function FileUploader({ listId }: { listId: string }) {
               headPreview={headPreview}
               columnMapping={columnMapping}
               onUpdateColumnMapping={updateColumnMapping}
-              onImportContacts={() => {}}
+              onImportContacts={startImportJob}
             />
+          </div>
+        ) : null}
+        {status === 'starting_import_job' ? (
+          <div className='flex items-center justify-center size-4/5'>
+            <div className='flex items-center gap-2 text-muted-foreground text-sm'>
+              <Spinner className='size-4' />
+              Starting import job…
+            </div>
+          </div>
+        ) : null}
+        {status === 'error' ? (
+          <div className='flex items-center justify-center size-4/5'>
+            <div className='flex items-center gap-2 text-muted-foreground text-sm'>
+              <AlertCircle className='size-4' />
+              Failed to start import job. Please try again.
+            </div>
           </div>
         ) : null}
       </div>

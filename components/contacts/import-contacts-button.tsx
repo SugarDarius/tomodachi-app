@@ -1,11 +1,12 @@
 'use client'
 
-import { Button } from '~/components/ui/button'
-import { Spinner } from '~/components/ui/spinner'
-import { Kbd, KbdGroup } from '~/components/ui/kbd'
+import Link from 'next/link'
+import { useRouter } from 'next/navigation'
+import { useHotkeys } from 'react-hotkeys-hook'
 
-import { useImportContacts } from './import-contacts-provider'
-import { ImportContactsDialog } from './import-contacts-dialog'
+import { Button } from '~/components/ui/button'
+import { Kbd, KbdGroup } from '~/components/ui/kbd'
+import { Upload } from 'lucide-react'
 
 export function ImportContactsButton({
   listId,
@@ -16,29 +17,33 @@ export function ImportContactsButton({
   appearance?: 'default' | 'icon'
   shortcut?: boolean
 }) {
-  const { isListImportBusy } = useImportContacts()
-
-  if (isListImportBusy(listId)) {
-    return (
-      <Button
-        variant='outline'
-        disabled
-        size={appearance === 'default' ? 'default' : 'icon'}
-      >
-        <Spinner data-icon='inline-start' />
-        {appearance === 'default' ? 'Importing...' : null}
-        <KbdGroup>
-          <Kbd className='rounded-sm border border-border'>I</Kbd>
-        </KbdGroup>
-      </Button>
-    )
-  }
+  const router = useRouter()
+  useHotkeys(
+    'I',
+    (e) => {
+      e.preventDefault()
+      router.push(`/dashboard/${listId}/import`)
+    },
+    { enabled: shortcut }
+  )
 
   return (
-    <ImportContactsDialog
-      listId={listId}
-      appearance={appearance}
-      shortcut={shortcut}
-    />
+    <Button
+      variant='default'
+      size={appearance === 'default' ? 'default' : 'icon'}
+      asChild
+    >
+      <Link href={`/dashboard/${listId}/import`}>
+        <Upload className='size-4' />
+        {appearance === 'default' ? (
+          <>
+            Import contacts
+            <KbdGroup>
+              <Kbd className='rounded-sm border border-border'>I</Kbd>
+            </KbdGroup>
+          </>
+        ) : null}
+      </Link>
+    </Button>
   )
 }
