@@ -11,7 +11,6 @@ import {
   contacts,
   contactImports,
   type ContactImportErrorEntry,
-  CONTACT_IMPORT_ERRORS_CAPACITY,
   contactsListMembers,
   contactsLists,
   type ContactImportChunk,
@@ -65,20 +64,7 @@ async function appendImportErrorEntries({
   await db
     .update(contactImports)
     .set({
-      errors: sql`(
-        SELECT COALESCE(
-          jsonb_agg(elem ORDER BY ord ASC),
-          '[]'::jsonb
-        )
-        FROM (
-          SELECT elem, ord
-          FROM jsonb_array_elements(
-            COALESCE(${contactImports.errors}, '[]'::jsonb) || ${incoming}::jsonb
-          ) WITH ORDINALITY AS u(elem, ord)
-          ORDER BY ord DESC
-          LIMIT ${CONTACT_IMPORT_ERRORS_CAPACITY}
-        ) recent
-      )`,
+      errors: sql`${contactImports.errors} || ${incoming}::jsonb`,
       updatedAt: sql`now()`,
     })
     .where(eq(contactImports.id, importId))

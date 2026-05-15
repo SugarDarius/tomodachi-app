@@ -130,8 +130,6 @@ export const contactImportStatusEnum = pgEnum('contact_import_status', [
 export type ContactImportErrorEntry =
   | { kind: 'skip'; rowNumber: number; reason: string }
   | { kind: 'fatal'; message: string }
-// Max number of error entries to store in the database.
-export const CONTACT_IMPORT_ERRORS_CAPACITY = 50
 /**
  * `contact_imports` table
  * Represents one CSV file uploaded to a blob storage (Vercel Blob)

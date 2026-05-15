@@ -20,6 +20,7 @@ import { useDebouncedFunction } from '~/hooks/use-debounced-function'
 
 import { useTableRowsStore } from '../_stores/table-rows'
 import { DeleteContactsDialog } from './delete-contacts-dialog'
+import { formatNumberWithCommas } from '~/utils/format-number'
 
 export function TableActions({
   listId,
@@ -117,9 +118,9 @@ export function TableActions({
             </Button>
           </DeleteContactsDialog>
         ) : null}
-        <div className='flex items-center w-[60px] justify-center'>
+        <div className='flex items-center min-w-[60px] justify-center'>
           <span className='text-sm text-muted-foreground'>
-            {pageIndex} / {totalPages}
+            {pageIndex} / {formatNumberWithCommas(totalPages)}
           </span>
         </div>
         <Tooltip>
