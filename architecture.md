@@ -139,7 +139,16 @@ After each chunk completes, counters on `contact_imports` are incremented (`numb
 
 Chunks are processed in **waves** of up to **4** concurrent chunk steps; a short pause between waves reduces bursts against Blob and Postgres.
 
-**Observed in tests:** a **~100 MB** CSV with **~1 million rows** is split into **~26 chunks** (4 MiB byte ranges, trimmed to line boundaries). With four chunks per wave, that is seven ingestion waves plus the 1s pauses between them. End-to-end import time in those runs was **1m 33s** (upload and client preview excluded; workflow prepare → plan → ingest → complete only).
+**Observed in tests** (workflow only: prepare → plan → ingest → complete; upload and client preview excluded):
+
+| Rows   | Chunks | Duration  |
+|--------|--------|-----------|
+| 1k     | 1      | ~2s       |
+| 10k    | 1      | ~4s       |
+| 100k   | 3      | ~13s      |
+| 1M     | 26     | ~1m 33s   |
+
+Chunks are ~4 MiB byte ranges trimmed to line boundaries. At 1M rows (~100 MB), four chunks run per wave (~7 waves) with 1s pauses between waves.
 
 ### Completion
 
