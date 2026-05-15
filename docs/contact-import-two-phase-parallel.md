@@ -7,7 +7,7 @@ Review document — **not applied to the codebase yet**.
 1. **Phase 1 (prepare + plan):** fetch blob size, then scan the blob once to build **row-aligned byte ranges** (same `CHUNK_SIZE` + last-newline trim rule as today).
 2. **Phase 2 (ingest):** run `ingestContactImportChunk` in parallel (e.g. `Promise.all` with a concurrency cap) using **fixed** `(byteStart, byteEndExclusive, chunkIndex)` — no shared `cursorByte` cursor.
 3. **Idempotency:** each chunk can be retried independently without double-counting rows.
-4. **Errors:** no concurrent `appendContactImportErrorEntries`; chunks return skip samples, one merge step appends them.
+4. **Errors:** stored in `contact_import_errors` (one row per entry); chunks return skip samples, one merge step **inserts** them (no JSONB read-modify-write on `contact_imports`).
 
 ## Caveats (read before implementing)
 
@@ -35,7 +35,7 @@ sequenceDiagram
     W->>I: Promise.all(chunkIndex...)
     I-->>W: per-chunk stats + skipSamples
   end
-  W->>M: append skip errors (once)
+  W->>M: insert skip errors (once)
   W->>C: ingestionStatus completed
 ```
 
@@ -43,10 +43,60 @@ sequenceDiagram
 
 ## 1. Schema (`schema.ts`)
 
-Add types and a **per-chunk table** (avoids concurrent JSONB read-modify-write on one row).
+Add types, a **per-chunk table**, and a **per-error table**. Remove `contact_imports.errors` (JSONB).
 
 ```typescript
-// After ContactImportErrorEntry / CONTACT_IMPORT_ERRORS_CAPACITY
+/**
+ * Error entry for a contact import (API / workflow shape).
+ * Persisted as rows in `contact_import_errors`.
+ */
+export type ContactImportErrorEntry =
+  | { kind: 'skip'; rowNumber: number; reason: string }
+  | { kind: 'fatal'; message: string }
+
+export const contactImportErrorKindEnum = pgEnum('contact_import_error_kind', [
+  'skip',
+  'fatal',
+])
+
+/**
+ * One row per import error (skip sample or fatal failure).
+ * Replaces the JSONB `errors` column on `contact_imports`.
+ */
+export const contactImportErrors = pgTable(
+  'contact_import_errors',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    importId: uuid('import_id')
+      .notNull()
+      .references(() => contactImports.id, { onDelete: 'cascade' }),
+    kind: contactImportErrorKindEnum('kind').notNull(),
+    /** Present when kind = 'skip' */
+    rowNumber: integer('row_number'),
+    /** Present when kind = 'skip' */
+    reason: text('reason'),
+    /** Present when kind = 'fatal' */
+    message: text('message'),
+    createdAt: timestamp('created_at').notNull().defaultNow(),
+  },
+  (t) => [
+    index('contact_import_errors_import_created_idx').on(
+      t.importId,
+      t.createdAt
+    ),
+    index('contact_import_errors_import_skip_row_idx').on(
+      t.importId,
+      t.rowNumber
+    ),
+  ]
+)
+
+export type ContactImportError = typeof contactImportErrors.$inferSelect
+
+/** Job row + errors loaded from `contact_import_errors` (for GET / UI). */
+export type ContactImportJob = typeof contactImports.$inferSelect & {
+  errors: ContactImportErrorEntry[]
+}
 
 export const contactImportChunkStatusEnum = pgEnum('contact_import_chunk_status', [
   'pending',
@@ -88,15 +138,24 @@ export const contactImportChunks = pgTable(
 export type ContactImportChunk = typeof contactImportChunks.$inferSelect
 ```
 
+**`contact_imports`:** drop the `errors` JSONB column (counters and status stay as today).
+
+```typescript
+// In contactImports pgTable — remove:
+//   errors: jsonb('errors').$type<ContactImportErrorEntry[]>().notNull().default([]),
+```
+
 Optional: document on `contactImports.cursorByte` that it is now **derived progress** (max completed `byteEndExclusive`), not the ingestion driver.
 
-No change required to `contactImports` columns beyond comments unless you want `chunkCount` denormalized for the UI.
+No other change required on `contact_imports` unless you want `chunkCount` denormalized for the UI.
 
 ---
 
-## 2. Migration (`drizzle-migrations/0007_contact_import_chunks.sql`)
+## 2. Migrations
 
-Generate with `pnpm db:generate` after schema edit, or apply manually:
+Generate with `pnpm db:generate` after schema edits, or apply manually.
+
+### 2a. Chunks (`drizzle-migrations/0007_contact_import_chunks.sql`)
 
 ```sql
 CREATE TYPE "public"."contact_import_chunk_status" AS ENUM('pending', 'completed', 'failed');
@@ -126,6 +185,46 @@ CREATE INDEX "contact_import_chunks_import_status_idx"
   ON "contact_import_chunks" USING btree ("import_id","status");
 ```
 
+### 2b. Errors table + drop JSONB (`drizzle-migrations/0008_contact_import_errors.sql`)
+
+```sql
+CREATE TYPE "public"."contact_import_error_kind" AS ENUM('skip', 'fatal');
+
+CREATE TABLE "contact_import_errors" (
+  "id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
+  "import_id" uuid NOT NULL,
+  "kind" "contact_import_error_kind" NOT NULL,
+  "row_number" integer,
+  "reason" text,
+  "message" text,
+  "created_at" timestamp DEFAULT now() NOT NULL
+);
+
+ALTER TABLE "contact_import_errors"
+  ADD CONSTRAINT "contact_import_errors_import_id_contact_imports_id_fk"
+  FOREIGN KEY ("import_id") REFERENCES "public"."contact_imports"("id")
+  ON DELETE cascade ON UPDATE no action;
+
+CREATE INDEX "contact_import_errors_import_created_idx"
+  ON "contact_import_errors" USING btree ("import_id","created_at");
+
+CREATE INDEX "contact_import_errors_import_skip_row_idx"
+  ON "contact_import_errors" USING btree ("import_id","row_number");
+
+-- Optional: migrate existing JSONB samples into rows before drop
+-- INSERT INTO contact_import_errors (import_id, kind, row_number, reason, message)
+-- SELECT ci.id,
+--   CASE WHEN e->>'kind' = 'fatal' THEN 'fatal'::contact_import_error_kind ELSE 'skip' END,
+--   (e->>'rowNumber')::int,
+--   e->>'reason',
+--   e->>'message'
+-- FROM contact_imports ci,
+--   jsonb_array_elements(ci.errors) AS e
+-- WHERE jsonb_array_length(ci.errors) > 0;
+
+ALTER TABLE "contact_imports" DROP COLUMN "errors";
+```
+
 ---
 
 ## 3. Shared constants (`workflows/contact-import.ts` top)
@@ -152,6 +251,60 @@ type ChunkIngestResult = {
 ---
 
 ## 4. Helpers (new, same file)
+
+### 4a. Insert import errors (replaces JSONB append)
+
+```typescript
+import {
+  contactImportErrors,
+  contactImports,
+  type ContactImportErrorEntry,
+} from '~/schema'
+
+function toContactImportErrorRow(
+  importId: string,
+  entry: ContactImportErrorEntry
+): typeof contactImportErrors.$inferInsert {
+  if (entry.kind === 'skip') {
+    return {
+      importId,
+      kind: 'skip',
+      rowNumber: entry.rowNumber,
+      reason: entry.reason,
+      message: null,
+    }
+  }
+  return {
+    importId,
+    kind: 'fatal',
+    rowNumber: null,
+    reason: null,
+    message: entry.message,
+  }
+}
+
+/** Insert error rows for an import (batch insert, no JSONB merge). */
+async function insertContactImportErrorEntries({
+  importId,
+  entries,
+}: {
+  importId: string
+  entries: ContactImportErrorEntry[]
+}): Promise<void> {
+  if (entries.length === 0) return
+
+  await db.insert(contactImportErrors).values(
+    entries.map((entry) => toContactImportErrorRow(importId, entry))
+  )
+
+  await db
+    .update(contactImports)
+    .set({ updatedAt: sql`now()` })
+    .where(eq(contactImports.id, importId))
+}
+```
+
+### 4b. Chunk planning / trim helpers
 
 ```typescript
 function countNewlinesInBuffer(buffer: Buffer): number {
@@ -554,10 +707,9 @@ async function mergeContactImportChunkErrors({
 
   if (skipSamples.length === 0) return
 
-  // Stable order for UI
   skipSamples.sort((a, b) => a.rowNumber - b.rowNumber)
 
-  await appendContactImportErrorEntries({
+  await insertContactImportErrorEntries({
     importId,
     entries: skipSamples.map((s) => ({
       kind: 'skip' as const,
@@ -568,7 +720,37 @@ async function mergeContactImportChunkErrors({
 }
 ```
 
-Remove `appendContactImportErrorEntries` from inside `ingestContactImportChunk`.
+Do **not** call `insertContactImportErrorEntries` from inside `ingestContactImportChunk` (same as before: one merge after parallel ingest).
+
+### 7b. Fatal errors — `markContactImportAsFailed`
+
+```typescript
+async function markContactImportAsFailed({
+  importId,
+  message,
+}: {
+  importId: string
+  message: string
+}): Promise<void> {
+  const trimmed = message.slice(0, 8000)
+
+  await insertContactImportErrorEntries({
+    importId,
+    entries: [{ kind: 'fatal', message: trimmed }],
+  })
+
+  await db
+    .update(contactImports)
+    .set({
+      ingestionStatus: 'failed',
+      completedAt: sql`now()`,
+      updatedAt: sql`now()`,
+    })
+    .where(eq(contactImports.id, importId))
+}
+```
+
+Remove any `appendContactImportErrorEntries` / `errors: sql\`...\`` updates on `contact_imports`.
 
 ---
 
@@ -654,33 +836,85 @@ Optional: extract `ingestContactImportChunksInParallel` as its own `'use step'` 
 import {
   contacts,
   contactImports,
-  contactImportChunks, // NEW
+  contactImportChunks,
+  contactImportErrors, // NEW
+  type ContactImportErrorEntry,
   // ...
 } from '~/schema'
 ```
 
 ---
 
-## 10. UI / API (optional, small)
+## 10. UI / API — load errors from the new table
 
-Progress can stay row-based (`numberOfInspectedRows` / `numberOfIngestedRows`). If you want chunk-aware progress:
-
-**`use-import-contacts-job.ts`** — optional fields (if you add a small API or join):
+`ContactImportJob` no longer includes `errors` on the `contact_imports` row. Load and attach them in **`_lib/jobs.ts`** (and keep the same JSON shape for the client).
 
 ```typescript
-// Optional: decode chunk progress from a new endpoint or extend existing GET
-// chunksCompleted: number
-// chunkCount: number
+import { asc, eq, and } from 'drizzle-orm'
+import {
+  contactImports,
+  contactImportErrors,
+  type ContactImportJob,
+  type ContactImportErrorEntry,
+} from '~/schema'
+
+function rowToContactImportErrorEntry(
+  row: typeof contactImportErrors.$inferSelect
+): ContactImportErrorEntry {
+  if (row.kind === 'fatal') {
+    return { kind: 'fatal', message: row.message ?? '' }
+  }
+  return {
+    kind: 'skip',
+    rowNumber: row.rowNumber ?? 0,
+    reason: row.reason ?? '',
+  }
+}
+
+export async function getContactImportJob({
+  importId,
+  listId,
+}: {
+  importId: string
+  listId: string
+}): Promise<ContactImportJob | null> {
+  const [job] = await db
+    .select()
+    .from(contactImports)
+    .where(
+      and(eq(contactImports.id, importId), eq(contactImports.listId, listId))
+    )
+
+  if (!job) return null
+
+  const errorRows = await db
+    .select()
+    .from(contactImportErrors)
+    .where(eq(contactImportErrors.importId, importId))
+    .orderBy(asc(contactImportErrors.createdAt))
+
+  return {
+    ...job,
+    errors: errorRows.map(rowToContactImportErrorEntry),
+  }
+}
 ```
 
-**Byte progress without schema change on parent:**
+**`use-import-contacts-job.ts`** — no decoder change; `errors` stays `array(taggedUnion('kind', { ... }))` as today.
+
+Progress can stay row-based (`numberOfInspectedRows` / `numberOfIngestedRows`). Optional chunk progress:
 
 ```typescript
-// progressBytes ≈ cursorByte (already updated per completed chunk)
+// chunksCompleted / chunkCount from contact_import_chunks
+```
+
+**Byte progress** (if you keep `cursorByte` on parent):
+
+```typescript
 // progressRatio = totalByteSize > 0 ? cursorByte / totalByteSize : 0
 ```
 
-No UI change is strictly required; `import-contacts-job.tsx` already shows row counts only.
+`import-contacts-job.tsx` can keep row counts only; errors are available on the job when you build an error UI later.
 
 ---
 
@@ -688,11 +922,13 @@ No UI change is strictly required; `import-contacts-job.tsx` already shows row c
 
 | File | Action |
 | --- | --- |
-| `schema.ts` | Add enum + `contactImportChunks` table |
-| `drizzle-migrations/*` | `pnpm db:generate` + `pnpm db:migrate` |
-| `workflows/contact-import.ts` | Full two-phase + parallel orchestration |
-| `workflows/contact-import.ts` imports | `contactImportChunks`, `and` already imported |
-| Tests (if any) | Add plan + parallel idempotency cases |
+| `schema.ts` | Add `contactImportErrors` + chunk table; remove `contactImports.errors`; export `ContactImportJob` with `errors` |
+| `drizzle-migrations/*` | Chunks migration + errors table + `DROP COLUMN errors` |
+| `workflows/contact-import.ts` | Two-phase + parallel; `insertContactImportErrorEntries` instead of JSONB append |
+| `app/dashboard/.../_lib/jobs.ts` | Join/load errors for GET |
+| `app/api/contacts/get/.../imports/[importId]/route.ts` | Unchanged if it uses `getContactImportJob` |
+| `use-import-contacts-job.ts` | Unchanged decoder (same `errors` shape) |
+| Tests (if any) | Plan + parallel idempotency; error rows after merge / fatal |
 
 ---
 
@@ -701,7 +937,7 @@ No UI change is strictly required; `import-contacts-job.tsx` already shows row c
 1. Small CSV (&lt; 4MB) → single chunk, import completes.
 2. Large CSV → multiple chunks; verify `contact_import_chunks` row count and `byteEndExclusive` of last chunk === `totalByteSize`.
 3. Force retry of one chunk step (workflow replay) → chunk stays `completed`, parent counters not doubled.
-4. Invalid emails in different chunks → `errors` JSON has **global** `rowNumber`s, sorted after merge.
+4. Invalid emails in different chunks → `contact_import_errors` rows have **global** `row_number`s (sorted before insert); GET returns them in `created_at` order.
 5. Parallel limit: watch DB connection pool under `PARALLEL_CHUNK_LIMIT = 4`.
 
 ---

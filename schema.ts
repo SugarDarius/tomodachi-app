@@ -206,20 +206,6 @@ export const contactImports = pgTable(
       .notNull()
       .default(0),
     /**
-     * Errors detected during ingestion
-     * @example
-     * [
-     *  {
-     *    "rowNumber": 1,
-     *    "error": "Invalid email address",
-     *  }
-     * ]
-     */
-    errors: jsonb('errors')
-      .$type<ContactImportErrorEntry[]>()
-      .notNull()
-      .default([]),
-    /**
      * When the contact import was created.
      */
     createdAt: timestamp('created_at').notNull().defaultNow(),
@@ -242,6 +228,63 @@ export const contactImports = pgTable(
 )
 
 export type ContactImportJob = typeof contactImports.$inferSelect
+
+export const contactImportErrorKindEnum = pgEnum('contact_import_error_kind', [
+  'skip',
+  'fatal',
+])
+
+/**
+ * `contact_import_errors` table
+ * Represents one row per import error (skip sample or fatal failure).
+ */
+export const contactImportErrors = pgTable(
+  'contact_import_errors',
+  {
+    /**
+     * The unique identifier for the contact import error.
+     */
+    id: uuid('id').primaryKey().defaultRandom(),
+    /**
+     * The import ID that the error is associated with.
+     */
+    importId: uuid('import_id')
+      .notNull()
+      .references(() => contactImports.id, { onDelete: 'cascade' }),
+    /**
+     * The kind of error.
+     */
+    kind: contactImportErrorKindEnum('kind').notNull(),
+    /**
+     * The row number of the error.
+     */
+    rowNumber: integer('row_number'),
+    /**
+     * The reason of the error.
+     */
+    reason: text('reason'),
+    /**
+     * The message of the error.
+     */
+    message: text('message'),
+    /**
+     * The timestamp when the contact import error was created.
+     */
+    createdAt: timestamp('created_at').notNull().defaultNow(),
+  },
+  (t) => [
+    index('contact_import_errors_import_created_idx').on(
+      t.importId,
+      t.createdAt
+    ),
+    index('contact_import_errors_import_skip_row_idx').on(
+      t.importId,
+      t.rowNumber
+    ),
+  ]
+)
+
+export type CreateContactImportError = typeof contactImportErrors.$inferInsert
 
 export const contactImportChunkStatusEnum = pgEnum(
   'contact_import_chunk_status',

@@ -16,6 +16,8 @@ import {
   type ContactImportChunk,
   type CreateContactImportChunk,
   contactImportChunks,
+  type CreateContactImportError,
+  contactImportErrors,
 } from '~/schema'
 import { db } from '~/lib/db'
 import { columnMappingRefsByIndex } from '~/lib/csv/columns'
@@ -42,13 +44,38 @@ const BATCH_UPSERT_SIZE = 1000
  */
 const PARALLEL_CHUNK_LIMIT = 4
 
-/* fail the workflow explcitly with a `FatalError` */
+/* Fail the workflow explicitly with a `FatalError` */
 const failWorkflow = (message: string): never => {
   throw new FatalError(message)
 }
 
-/** Append error entries to the import. */
-async function appendImportErrorEntries({
+const toContactImportErrorRow = ({
+  entry,
+  importId,
+}: {
+  entry: ContactImportErrorEntry
+  importId: string
+}): CreateContactImportError => {
+  switch (entry.kind) {
+    case 'skip':
+      return {
+        importId,
+        kind: 'skip',
+        rowNumber: entry.rowNumber,
+        reason: entry.reason,
+        message: null,
+      }
+    case 'fatal':
+      return {
+        importId,
+        kind: 'fatal',
+        message: entry.message,
+      }
+  }
+}
+
+/** Insert error entries to the contact import errors table. */
+async function insertImportErrorEntries({
   importId,
   entries,
 }: {
@@ -59,14 +86,29 @@ async function appendImportErrorEntries({
     return
   }
 
-  const incoming = JSON.stringify(entries)
+  let batch: CreateContactImportError[] = []
+
+  const $flushBatch = async () => {
+    if (batch.length === 0) {
+      return
+    }
+
+    await db.insert(contactImportErrors).values(batch)
+    batch = []
+  }
+
+  for (const entry of entries) {
+    batch.push(toContactImportErrorRow({ entry, importId }))
+    if (batch.length === BATCH_UPSERT_SIZE) {
+      await $flushBatch()
+    }
+  }
+
+  await $flushBatch()
 
   await db
     .update(contactImports)
-    .set({
-      errors: sql`${contactImports.errors} || ${incoming}::jsonb`,
-      updatedAt: sql`now()`,
-    })
+    .set({ updatedAt: sql`now()` })
     .where(eq(contactImports.id, importId))
 }
 
@@ -174,7 +216,7 @@ async function markImportAsFailed({
   // Truncate the message to 8000 characters to avoid PostgreSQL's text limit.
   const trimmed = message.slice(0, 8000)
 
-  await appendImportErrorEntries({
+  await insertImportErrorEntries({
     importId,
     entries: [{ kind: 'fatal', message: trimmed }],
   })
@@ -690,7 +732,7 @@ async function mergeSkipErrors({
 
   skipSamples.sort((a, b) => a.rowNumber - b.rowNumber)
 
-  await appendImportErrorEntries({
+  await insertImportErrorEntries({
     importId,
     entries: skipSamples.map((s) => ({
       kind: 'skip',
