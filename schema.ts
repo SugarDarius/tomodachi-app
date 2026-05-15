@@ -202,12 +202,6 @@ export const contactImports = pgTable(
      */
     numberOfSkippedRows: integer('number_of_skipped_rows').notNull().default(0),
     /**
-     * Byte offset into the blob file already processed by the previous chunks
-     * during the ingestion process. Bumped at the end of each successful
-     * import chunk job steps.
-     */
-    cursorByte: bigint('cursor_byte', { mode: 'number' }).notNull().default(0),
-    /**
      * Total byte size of the blob.
      */
     totalByteSize: bigint('total_byte_size', { mode: 'number' })
@@ -332,6 +326,9 @@ export const contactImportChunks = pgTable(
     ),
   ]
 )
+
+export type ContactImportChunk = typeof contactImportChunks.$inferSelect
+export type CreateContactImportChunk = typeof contactImportChunks.$inferInsert
 
 /**
  * `contacts` table

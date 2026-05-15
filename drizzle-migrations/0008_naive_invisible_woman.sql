@@ -1,0 +1,1 @@
+ALTER TABLE "contact_imports" DROP COLUMN "cursor_byte";

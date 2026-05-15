@@ -62,7 +62,6 @@ export function useImportContactsJob({
       numberOfInspectedRows: number,
       numberOfIngestedRows: number,
       numberOfSkippedRows: number,
-      cursorByte: number,
       totalByteSize: number,
       createdAt: flexDate,
       updatedAt: flexDate,
@@ -83,7 +82,6 @@ export function useImportContactsJob({
       numberOfInspectedRows: contactImportJob.numberOfInspectedRows,
       numberOfIngestedRows: contactImportJob.numberOfIngestedRows,
       numberOfSkippedRows: contactImportJob.numberOfSkippedRows,
-      cursorByte: contactImportJob.cursorByte,
       totalByteSize: contactImportJob.totalByteSize,
     },
   } as const

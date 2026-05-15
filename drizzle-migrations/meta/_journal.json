@@ -57,6 +57,13 @@
       "when": 1778844765512,
       "tag": "0007_open_thunderbolt_ross",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1778849586768,
+      "tag": "0008_naive_invisible_woman",
+      "breakpoints": true
     }
   ]
 }
