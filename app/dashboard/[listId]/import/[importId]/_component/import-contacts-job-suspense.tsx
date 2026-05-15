@@ -17,7 +17,10 @@ export async function ImportContactsJobSuspense({
   const { listId, importId } = await params
   const contactImportJob = await getContactImportJob({ importId, listId })
 
-  if (contactImportJob === null) {
+  if (
+    contactImportJob === null ||
+    ['completed', 'failed'].includes(contactImportJob.ingestionStatus)
+  ) {
     redirect(`/dashboard/${listId}`)
   }
 
