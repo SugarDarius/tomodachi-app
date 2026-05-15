@@ -295,7 +295,7 @@ async function planChunks({
     chunkIndex += 1
   }
 
-  if (importChunks.length > 0) {
+  if (importChunks.length <= 0) {
     await markImportAsFailed({ importId, message: 'Failed to plan chunks' })
     return failWorkflow('Failed to plan chunks')
   }

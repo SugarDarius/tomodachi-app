@@ -95,17 +95,27 @@ export function ImportContactsJob({
     initialContactImportJob,
   })
 
+  const disabled = status !== 'completed'
+
   return (
     <div className='flex flex-col gap-4 overflow-hidden flex-1'>
       <div className='flex flex-1 flex-col items-center justify-center overflow-hidden gap-8'>
         <Terminal fileName={fileName} status={status} stats={stats} />
         <Button
           asChild
-          disabled={status !== 'completed'}
+          disabled={disabled}
           variant={status === 'failed' ? 'destructive' : 'outline'}
           size={'lg'}
         >
-          <Link href={`/dashboard/${listId}`}>
+          <Link
+            href={`/dashboard/${listId}`}
+            aria-disabled={disabled}
+            onClick={(e) => {
+              if (disabled) {
+                e.preventDefault()
+              }
+            }}
+          >
             <CheckCircle className='size-4 text-green-500/80' />
             View contacts
           </Link>
