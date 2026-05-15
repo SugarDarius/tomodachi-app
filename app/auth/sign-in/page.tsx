@@ -1,5 +1,6 @@
 import { Command } from 'lucide-react'
 
+import { Globe } from '../_components/globe'
 import { SignInForm } from './sign-in-form'
 
 export default function SignUpPage() {
@@ -20,7 +21,9 @@ export default function SignUpPage() {
           </div>
         </div>
       </div>
-      <div className='relative hidden bg-muted lg:block'></div>
+      <div className='relative hidden bg-muted lg:flex flex-1 overflow-hidden'>
+        <Globe />
+      </div>
     </div>
   )
 }
