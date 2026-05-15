@@ -50,6 +50,13 @@
       "when": 1778607264502,
       "tag": "0006_bumpy_the_hood",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1778844765512,
+      "tag": "0007_open_thunderbolt_ross",
+      "breakpoints": true
     }
   ]
 }

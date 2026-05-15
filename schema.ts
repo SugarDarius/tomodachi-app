@@ -251,10 +251,92 @@ export const contactImports = pgTable(
 
 export type ContactImportJob = typeof contactImports.$inferSelect
 
+export const contactImportChunkStatusEnum = pgEnum(
+  'contact_import_chunk_status',
+  ['pending', 'completed', 'failed']
+)
+
+/**
+ * `contact_import_chunks` table
+ * One row per planned byte range to import from the blob file.
+ */
+export const contactImportChunks = pgTable(
+  'contact_import_chunks',
+  {
+    importId: uuid('import_id')
+      .notNull()
+      .references(() => contactImports.id, { onDelete: 'cascade' }),
+    /**
+     * The index of the chunk.
+     */
+    chunkIndex: integer('chunk_index').notNull(),
+    /**
+     * The start byte of the chunk.
+     */
+    byteStart: bigint('byte_start', { mode: 'number' }).notNull(),
+    /**
+     * The end byte (exclusive) of the chunk.
+     */
+    byteEndExclusive: bigint('byte_end_exclusive', {
+      mode: 'number',
+    }).notNull(),
+    /**
+     * 1-based row number of the first CSV record in the chunk.
+     */
+    firstRowNumber: integer('first_row_number').notNull(),
+
+    /**
+     * Ingestion status of the chunk.
+     */
+    status: contactImportChunkStatusEnum('status').notNull().default('pending'),
+
+    /**
+     * Number of CSV records inspected in the chunk.
+     */
+    numberOfInspectedRows: integer('number_of_inspected_rows')
+      .notNull()
+      .default(0),
+
+    /**
+     * Number of CSV records ingested in the chunk.
+     */
+    numberOfIngestedRows: integer('number_of_ingested_rows')
+      .notNull()
+      .default(0),
+
+    /**
+     * Number of CSV records skipped in the chunk.
+     */
+    numberOfSkippedRows: integer('number_of_skipped_rows').notNull().default(0),
+
+    /**
+     * When the chunk ingestion was completed.
+     */
+    completedAt: timestamp('completed_at'),
+
+    /**
+     * When the chunk was created.
+     */
+    createdAt: timestamp('created_at').notNull().defaultNow(),
+
+    /**
+     * When the chunk was updated.
+     */
+    updatedAt: timestamp('updated_at').notNull().defaultNow(),
+  },
+  (t) => [
+    primaryKey({ columns: [t.importId, t.chunkIndex] }),
+    index('contact_import_chunks_import_id_status_idx').on(
+      t.importId,
+      t.status
+    ),
+  ]
+)
+
 /**
  * `contacts` table
  *
- * Represents the canonical contact rows merged from staging (or created elsewhere like crud operations).
+ * Represents the contact rows ingested from imports (or created elsewhere like crud operations).
  */
 export const contacts = pgTable(
   'contacts',
