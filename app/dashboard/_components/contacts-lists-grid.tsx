@@ -56,7 +56,7 @@ export async function ContactsListsGrid() {
   const lists = await getContactsLists()
 
   return (
-    <div className='grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'>
+    <div className='grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-4'>
       {lists.map((list) => (
         <Link href={`/dashboard/${list.id}`} key={list.id}>
           <Card className='transition-all hover:shadow-md hover:border-primary/20 gap-8 min-h-40'>

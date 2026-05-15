@@ -36,12 +36,14 @@ const ContactColumn = ({ name, value }: { name: string; value: string }) => {
         'border-cyan-500/30 bg-cyan-500/5 hover:bg-cyan-500/10'
       )}
     >
-      <div className='flex items-center justify-between w-full gap-2'>
-        <div className='flex flex-col gap-1'>
+      <div className='flex items-center justify-between gap-2 flex-1 overflow-hidden'>
+        <div className='flex flex-col gap-1 overflow-hidden'>
           <span className='text-xs text-muted-foreground  font-medium uppercase tracking-wide'>
             {name}
           </span>
-          <span className='mt-1 text-sm truncate'>{value}</span>
+          <span className='mt-1 text-sm truncate' title={value}>
+            {value}
+          </span>
         </div>
       </div>
       <Button
