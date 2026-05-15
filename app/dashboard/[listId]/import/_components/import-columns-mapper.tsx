@@ -315,11 +315,7 @@ export function ImportColumnsMapper({
                         )
 
                         return (
-                          <SelectItem
-                            key={opt.value}
-                            value={opt.value}
-                            label={opt.label}
-                          >
+                          <SelectItem key={opt.value} value={opt.value}>
                             <div className='flex items-center gap-2'>
                               <span>{opt.label}</span>
                               {opt.required && (
