@@ -1,6 +1,6 @@
 'use client'
 
-import { ContactIcon, ArrowLeft, ArrowRight, SearchAlert } from 'lucide-react'
+import { ArrowLeft, ArrowRight, SearchAlert } from 'lucide-react'
 
 import { type Contact } from '~/schema'
 import { formatNumberWithCommas } from '~/utils/format-number'
@@ -84,7 +84,6 @@ export function ContactsTable({
               </>
             ) : (
               <>
-                <ContactIcon className='size-24 text-muted-foreground' />
                 <ImportContactsButton listId={listId} shortcut={false} />
               </>
             )}
