@@ -17,6 +17,7 @@
   "dependencies": {
     "@neondatabase/auth": "0.3.0-beta",
     "@neondatabase/serverless": "^1.1.0",
+    "@number-flow/react": "^0.6.0",
     "@sugardarius/anzen": "^2.3.1",
     "@t3-oss/env-core": "^0.13.11",
     "@tanstack/react-table": "^8.21.3",

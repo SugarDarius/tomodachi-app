@@ -1,12 +1,30 @@
 'use client'
 
 import Link from 'next/link'
+import NumberFlow, { continuous } from '@number-flow/react'
+import { CheckCircle } from 'lucide-react'
 
 import { Button } from '~/components/ui/button'
 
 import { type ContactImportJob } from '~/schema'
 import { ImportStepper } from '../../_components/import-stepper'
 import { useImportContactsJob } from '../_hooks/use-import-contacts-job'
+
+const DynamicNumberValue = ({ value }: { value: number }) => {
+  return (
+    <NumberFlow
+      value={value}
+      willChange
+      plugins={[continuous]}
+      locales='en-US'
+      format={{
+        notation: 'compact',
+        compactDisplay: 'short',
+        roundingMode: 'trunc',
+      }}
+    />
+  )
+}
 
 const Terminal = ({
   fileName,
@@ -38,13 +56,16 @@ const Terminal = ({
         <span>$ Importing contact from {fileName}…</span>
         <span className='text-cyan-500/80'>[STATUS] {status}</span>
         <span className='text-muted-foreground'>
-          [PROGRESS] inspected rows: {stats.numberOfInspectedRows}
+          [PROGRESS] inspected rows:{' '}
+          <DynamicNumberValue value={stats.numberOfInspectedRows} />
         </span>
         <span className='text-muted-foreground'>
-          [PROGRESS] ingested rows: {stats.numberOfIngestedRows}
+          [PROGRESS] ingested rows:{' '}
+          <DynamicNumberValue value={stats.numberOfIngestedRows} />
         </span>
         <span className='text-muted-foreground'>
-          [PROGRESS] skipped rows: {stats.numberOfSkippedRows}
+          [PROGRESS] skipped rows:{' '}
+          <DynamicNumberValue value={stats.numberOfSkippedRows} />
         </span>
         {status === 'completed' ? (
           <span className='text-green-500/80'>Import completed</span>
@@ -84,7 +105,10 @@ export function ImportContactsJob({
           variant={status === 'failed' ? 'destructive' : 'outline'}
           size={'lg'}
         >
-          <Link href={`/dashboard/${listId}`}>View contacts</Link>
+          <Link href={`/dashboard/${listId}`}>
+            <CheckCircle className='size-4 text-green-500/80' />
+            View contacts
+          </Link>
         </Button>
       </div>
       <div className='flex flex-col gap-2 flex-none px-4'>
