@@ -1,5 +1,4 @@
 import Link from 'next/link'
-import { cacheLife } from 'next/cache'
 import { Suspense } from 'react'
 import { HomeIcon } from 'lucide-react'
 
@@ -32,10 +31,6 @@ export default async function Page({
 }: {
   params: Promise<{ listId: string; importId: string }>
 }) {
-  'use cache'
-  cacheLife({
-    expire: 5,
-  })
   return (
     <div className='flex flex-col gap-4 p-4 h-full max-h-full overflow-hidden'>
       <div className='flex items-center justify-between flex-none'>
