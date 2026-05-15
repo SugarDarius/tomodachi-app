@@ -116,7 +116,9 @@ export function ImportContactsJob({
               }
             }}
           >
-            <CheckCircle className='size-4 text-green-500/80' />
+            {status === 'completed' ? (
+              <CheckCircle className='size-4 text-green-500/80' />
+            ) : null}
             View contacts
           </Link>
         </Button>

@@ -1,9 +1,13 @@
+import { redirect } from 'next/navigation'
 import { numeric, optional, string } from 'decoders'
 
 import { Skeleton } from '~/components/ui/skeleton'
 
 import { DEFAULT_PAGE_INDEX } from '../_lib/constants'
-import { getContactsListMembersPaginated } from '../_lib/contacts-list'
+import {
+  getContactsList,
+  getContactsListMembersPaginated,
+} from '../_lib/contacts-list'
 
 import { ContactsTable } from './contacts-table'
 
@@ -36,6 +40,11 @@ export async function ContactsTableSuspense({
 
   const decodedSearch = optional(string).decode(search)
   const searchQuery = decodedSearch.ok ? decodedSearch.value : undefined
+
+  const list = await getContactsList({ id: listId })
+  if (list === null) {
+    redirect('/dashboard')
+  }
 
   const initialPage = await getContactsListMembersPaginated({
     id: listId,
