@@ -64,7 +64,9 @@ export function TableActions({
       // eslint-disable-next-line react-hooks/set-state-in-effect
       setQuery('')
     }
-  }, [searchQuery, query])
+    // 👇🏻 fine to disable as we only want to run this effect when searchQuery changes
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchQuery])
 
   return (
     <div className='flex items-center justify-between py-2 flex-none border-b border-border'>
