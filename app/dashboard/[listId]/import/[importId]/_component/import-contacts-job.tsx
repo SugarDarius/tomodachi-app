@@ -4,6 +4,7 @@ import Link from 'next/link'
 import NumberFlow, { continuous } from '@number-flow/react'
 import { CheckCircle } from 'lucide-react'
 
+import { cn } from '~/lib/utils'
 import { Button } from '~/components/ui/button'
 
 import { type ContactImportJob } from '~/schema'
@@ -106,6 +107,10 @@ export function ImportContactsJob({
           disabled={disabled}
           variant={status === 'failed' ? 'destructive' : 'outline'}
           size={'lg'}
+          className={cn(
+            disabled &&
+              'cursor-not-allowed hover:bg-destructive/20 dark:hover:bg-destructive/40'
+          )}
         >
           <Link
             href={`/dashboard/${listId}`}
