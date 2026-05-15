@@ -41,8 +41,10 @@ const StepItem = ({
 
 export function ImportStepper({
   step,
+  importCompleted = false,
 }: {
   step: 'upload' | 'mapping' | 'import'
+  importCompleted?: boolean
 }) {
   return (
     <div className='flex flex-row items-center justify-center gap-3.5'>
@@ -56,7 +58,11 @@ export function ImportStepper({
         completed={step === 'import'}
         title='Map & Review'
       />
-      <StepItem active={step === 'import'} title='Import' />
+      <StepItem
+        active={step === 'import'}
+        completed={importCompleted}
+        title='Import'
+      />
     </div>
   )
 }

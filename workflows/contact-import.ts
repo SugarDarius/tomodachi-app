@@ -15,10 +15,6 @@ import {
   contactsListMembers,
   contactsLists,
 } from '~/schema'
-import {
-  emitContactImportDone,
-  emitContactImportTick,
-} from '~/lib/realtime-emit-workflow'
 import { columnMappingRefsByIndex } from '~/lib/csv/columns'
 import {
   mapContactImportRow,
@@ -97,11 +93,6 @@ async function markContactImportAsFailed({
       updatedAt: sql`now()`,
     })
     .where(eq(contactImports.id, importId))
-
-  await emitContactImportDone({
-    importId,
-    payload: { ingestionStatus: 'failed', lastError: trimmed },
-  })
 }
 
 /**
@@ -199,6 +190,7 @@ const fetchBlobChunkByRange = async ({
 
 /**
  * The size of the batch to upsert contacts.
+ * 1ks rows per upsert batch operation to avoid PostgreSQL's cursor limit.
  */
 const BATCH_UPSERT_SIZE = 1000
 
@@ -446,22 +438,6 @@ async function ingestContactImportChunk({
       numberOfSkippedRows: contactImports.numberOfSkippedRows,
     })
 
-  /**
-   * Emit a tick event to the realtime channel.
-   * The tick event is used to update the client with the progress of the import.
-   */
-  await emitContactImportTick({
-    importId,
-    payload: {
-      numberOfInspectedRows: numberOfInspectedChunk,
-      numberOfIngestedRows: numberOfIngestedChunk,
-      numberOfSkippedRows: numberOfSkippedChunk,
-      cursorByte: updated.cursorByte,
-      totalByteSize: updated.totalByteSize,
-      ingestionStatus: job.ingestionStatus,
-    },
-  })
-
   return { done: updated.cursorByte >= (updated.totalByteSize ?? 0) }
 }
 
@@ -502,14 +478,6 @@ async function completeContactImport({
     .where(
       and(eq(contactsLists.id, job.listId), isNull(contactsLists.deletedAt))
     )
-
-  await emitContactImportDone({
-    importId,
-    payload: {
-      ingestionStatus: 'completed',
-      lastError: null,
-    },
-  })
 }
 
 export async function contactImportWorkflow({

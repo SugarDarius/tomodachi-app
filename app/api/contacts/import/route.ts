@@ -65,8 +65,8 @@ export const POST = createSafeRouteHandler(
 
     return Response.json(
       {
-        contactImportId,
-        workFlowRunId: run.runId,
+        importId: contactImportId,
+        workflowRunId: run.runId,
       },
       { status: 200 }
     )

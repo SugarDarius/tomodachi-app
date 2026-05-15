@@ -6,7 +6,7 @@ import { object, string } from 'decoders'
 import { type ColumnMapping } from '~/schema'
 import { type CreateContactImportResponseBody } from '~/lib/csv/contact-import'
 
-export function useImportContactsJob({
+export function useStartImportContactsJob({
   listId,
   onImportJobStarted,
   onImportJobError,
@@ -41,12 +41,14 @@ export function useImportContactsJob({
             columnMap,
           }),
         })
+
         if (!res.ok) {
           onImportJobError(
             new Error(`Failed to start import job: ${res.statusText}`)
           )
           return
         }
+
         const job = object({
           importId: string,
           workflowRunId: string,

@@ -249,6 +249,8 @@ export const contactImports = pgTable(
   ]
 )
 
+export type ContactImportJob = typeof contactImports.$inferSelect
+
 /**
  * `contacts` table
  *

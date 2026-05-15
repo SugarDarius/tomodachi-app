@@ -13,7 +13,7 @@ import {
 } from '~/lib/csv/contact-import'
 import { previewCsvHead } from '~/lib/csv/head'
 import { autoDetectColumnMapping } from '~/lib/csv/columns'
-import { useImportContactsJob } from './use-import-contacts-job'
+import { useStartImportContactsJob } from './use-start-import-contacts-job'
 
 const useFileUpload = ({
   onFileUploaded,
@@ -194,7 +194,6 @@ export function useFileUploader({ listId }: { listId: string }) {
 
   const onImportJobStarted = useCallback(
     (importJob: CreateContactImportResponseBody) => {
-      // REDIRECT TO IMPORT JOB PAGE
       router.push(`/dashboard/${listId}/import/${importJob.importId}`)
     },
     [listId, router]
@@ -209,7 +208,7 @@ export function useFileUploader({ listId }: { listId: string }) {
     }))
   }, [])
 
-  const { startImport } = useImportContactsJob({
+  const { startImport } = useStartImportContactsJob({
     listId,
     onImportJobStarted,
     onImportJobError,
