@@ -1,7 +1,7 @@
 'use client'
 
 import { useRouter } from 'next/navigation'
-import { useCallback, useState } from 'react'
+import { useCallback, useLayoutEffect, useState } from 'react'
 import { toast } from 'sonner'
 import { upload } from '@vercel/blob/client'
 
@@ -23,7 +23,10 @@ const useFileUpload = ({
   onFileUploadError: (error: unknown) => void
 }) => {
   const [uploading, setUploading] = useState(false)
-  const [error, setError] = useState<unknown | null>(null)
+
+  const resetUpload = useCallback(() => {
+    setUploading(false)
+  }, [])
 
   const uploadFile = useCallback(
     (file: File) => {
@@ -44,7 +47,6 @@ const useFileUpload = ({
           onFileUploaded(blobResult.url, file)
         })
         .catch((err) => {
-          setError(err)
           onFileUploadError(err)
         })
         .finally(() => {
@@ -56,8 +58,8 @@ const useFileUpload = ({
 
   return {
     uploading,
-    error,
     uploadFile,
+    resetUpload,
   } as const
 }
 
@@ -97,6 +99,15 @@ export type FileUploaderState = {
   columnMapping: ColumnMapping | null
 }
 
+const setInitialState = (listId: string): FileUploaderState => ({
+  listId,
+  file: null,
+  status: 'idle',
+  blobUrl: null,
+  headPreview: null,
+  columnMapping: null,
+})
+
 /**
  * Hook manage file uploader state and actions.
  *
@@ -107,14 +118,13 @@ export type FileUploaderState = {
 export function useFileUploader({ listId }: { listId: string }) {
   const router = useRouter()
 
-  const [uploaderState, setUploaderState] = useState<FileUploaderState>({
-    listId,
-    file: null,
-    status: 'idle',
-    blobUrl: null,
-    headPreview: null,
-    columnMapping: null,
-  })
+  const [uploaderState, setUploaderState] = useState<FileUploaderState>(() =>
+    setInitialState(listId)
+  )
+
+  const resetUploader = useCallback(() => {
+    setUploaderState(setInitialState(listId))
+  }, [listId])
 
   const readPreview = useCallback(async (file: File) => {
     setUploaderState((prev) => ({
@@ -167,10 +177,29 @@ export function useFileUploader({ listId }: { listId: string }) {
     }))
   }, [])
 
-  const { uploadFile } = useFileUpload({
+  const { uploadFile, resetUpload } = useFileUpload({
     onFileUploaded,
     onFileUploadError,
   })
+
+  const resetAll = useCallback(() => {
+    resetUploader()
+    resetUpload()
+  }, [resetUploader, resetUpload])
+
+  /**
+   * Reset the uploader state when the page is hidden.
+   * It's a bug due to Cache Components where this route is kept
+   * in `<Activity />` component when navigating away.
+   *
+   * So, we need to reset the uploader state when the page is hidden.
+   * See https://nextjs.org/docs/app/guides/preserving-ui-state
+   */
+  useLayoutEffect(() => {
+    return () => {
+      resetAll()
+    }
+  }, [resetAll])
 
   const updateColumnMapping = useCallback((columnMapping: ColumnMapping) => {
     setUploaderState((prev) => ({
