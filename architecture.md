@@ -113,7 +113,7 @@ flowchart TD
   MR -->|ok| BT[Batch up to 6000 rows]
   BT --> FB[flushBatch]
   FB --> CC[Mark chunk completed + bump import counters]
-  CC --> W[Ingest waves of 4 chunks]
+  CC --> W[Ingest waves of 15 chunks]
   W --> ME[mergeSkipErrors]
   ME --> CI[completeImport]
 ```
@@ -165,7 +165,7 @@ The step returns chunk stats plus `skipSamples` for the orchestrator.
 
 Before ingestion, the workflow runs **`prepareImport`** (Blob `head()` → `totalByteSize` on `contact_imports`, idempotent if already set) and **`planChunks`** (~4 MiB byte ranges trimmed to `\n`, rows in `contact_import_chunks`; skipped if chunks already exist).
 
-6. **Parallel ingest waves** — For each window of up to **4** chunk indices, `Promise.all(ingestChunk(...))`, merge `skipSamples`. If more chunks remain, **`sleep('1s')`** before the next wave.
+6. **Parallel ingest waves** — For each window of up to **15** chunk indices, `Promise.all(ingestChunk(...))`, merge `skipSamples`. If more chunks remain, **`sleep('1s')`** before the next wave.
 7. **Persist skip samples** — If any samples were collected, **`mergeSkipErrors`**: sort by `rowNumber`, batch-insert into `contact_import_errors` (`kind: 'skip'`), touch `contact_imports.updated_at`. Fatal errors are not written here.
 8. **Complete import** — **`completeImport`**: set `ingestion_status: completed`, `completedAt`; copy `columnMap` onto the parent `contacts_lists` row (non-deleted lists).
 
@@ -335,7 +335,7 @@ Each chunk is a durable workflow step (`'use step'`). Row handling, batching, `f
 
 ### Parallelism
 
-Chunks are processed in **waves** of up to **4** concurrent chunk steps; a short pause between waves reduces bursts against Blob and Postgres.
+Chunks are processed in **waves** of up to **15** concurrent chunk steps; a short pause between waves reduces bursts against Blob and Postgres.
 
 **Observed in tests** (workflow only: prepare → plan → ingest → complete; upload and client preview excluded):
 
