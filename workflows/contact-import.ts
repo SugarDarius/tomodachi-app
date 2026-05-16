@@ -35,14 +35,17 @@ const CHUNK_SIZE = 1024 * 1024 * 4
 
 /**
  * The size of the batch to upsert contacts.
- * 1ks rows per upsert batch operation to avoid PostgreSQL's cursor limit.
+ * Defined empirically to get the best trade-off between speed,
+ * memory efficiency, and DB provider limits.
  */
-const BATCH_UPSERT_SIZE = 1000
+const BATCH_UPSERT_SIZE = 6000
 
 /**
  * Number of max concurrent chunks to ingest in parallel.
- */
-const PARALLEL_CHUNK_LIMIT = 4
+ * Defined empirically to get the best trade-off between speed,
+ * memory efficiency, and DB provider limits.
+ * */
+const PARALLEL_CHUNK_LIMIT = 15
 
 /* Fail the workflow explicitly with a `FatalError` */
 const failWorkflow = (message: string): never => {

@@ -110,7 +110,7 @@ flowchart TD
   IC --> ST[Stream csv-parse]
   ST --> MR[mapContactImportRow per record]
   MR -->|invalid email| SK[Skip + sample in memory]
-  MR -->|ok| BT[Batch up to 1000 rows]
+  MR -->|ok| BT[Batch up to 6000 rows]
   BT --> FB[flushBatch]
   FB --> CC[Mark chunk completed + bump import counters]
   CC --> W[Ingest waves of 4 chunks]
@@ -122,7 +122,9 @@ flowchart TD
 
 ### After row mapping
 
-Everything below runs inside `ingestChunk` and `contactImportWorkflow` (`workflows/contact-import.ts`). Constants: `BATCH_UPSERT_SIZE = 1000`, `PARALLEL_CHUNK_LIMIT = 4`.
+Everything below runs inside `ingestChunk` and `contactImportWorkflow` (`workflows/contact-import.ts`). Constants: `BATCH_UPSERT_SIZE = 6000`, `PARALLEL_CHUNK_LIMIT = 15`.
+
+> The batch limits `BATCH_UPSERT_SIZE` and `PARALLEL_CHUNK_LIMIT` are defined empirically to get the best trade-off between speed,memory efficiency, and DB provider limits.
 
 #### Per record (inside `ingestChunk`)
 
@@ -137,7 +139,7 @@ For each row emitted by `csv-parse`, the chunk step increments `numberOfInspecte
    - Append `{ rowNumber: globalRowNumber, reason: 'Invalid email address' }` to in-memory `skipSamples`.
    - Do not batch or write the row.
 
-2. **Batch valid rows** — Push the mapped row into an in-memory batch. When `batch.length >= 1000`, call **`flushBatch`**. After the stream ends, flush any remainder.
+2. **Batch valid rows** — Push the mapped row into an in-memory batch. When `batch.length >= 6000`, call **`flushBatch`**. After the stream ends, flush any remainder.
 
 #### Per batch (`flushBatch`)
 
@@ -171,7 +173,7 @@ Before ingestion, the workflow runs **`prepareImport`** (Blob `head()` → `tota
 flowchart TD
   subgraph ingestChunk["ingestChunk (per chunk, durable step)"]
     MR[mapContactImportRow] -->|null| SK[skip + sample]
-    MR -->|ok| BT[batch ≤ 1000]
+    MR -->|ok| BT[batch ≤ 6000]
     BT --> FB[flushBatch]
     FB --> CH[mark chunk completed + bump import counters]
   end
@@ -190,7 +192,7 @@ flowchart TD
 | `planChunks`    | Skips if any chunk row already exists (safe replay).                                                          |
 | `ingestChunk`   | Skips work if chunk already `completed`.                                                                      |
 | `flushBatch`    | Upsert + membership inserts are safe on chunk replay.                                                         |
-| Import counters | Can drift by up to one batch (1000 rows) if a chunk retries after partial success; contact rows stay correct. |
+| Import counters | Can drift by up to one batch (6000 rows) if a chunk retries after partial success; contact rows stay correct. |
 
 **Failure:** Uncaught errors call `markImportAsFailed` (fatal row in `contact_import_errors`, message truncated to 8000 chars, `ingestion_status: failed`, `completedAt`), then re-throw. `flushBatch` and missing chunks can also fail the import directly.
 
@@ -303,15 +305,15 @@ The import path is optimized so **row volume grows in `contacts` and `contacts_l
 
 4. **Chunked workflow state (O(chunks), not O(rows))** — Progress and retries are tracked per byte range (`contact_import_chunks`), not per CSV line. At 1M rows you get on the order of tens of chunk rows, not millions of state rows.
 
-5. **Batched upserts (1000 rows per statement)** — Each flush is one multi-row `INSERT` + one membership `INSERT`, amortizing round-trips (important on Neon’s HTTP driver, which has no interactive transactions). In-batch email dedupe avoids intra-statement unique violations.
+5. **Batched upserts (6000 rows per statement)** — Each flush is one multi-row `INSERT` + one membership `INSERT`, amortizing round-trips (important on Neon’s HTTP driver, which has no interactive transactions). In-batch email dedupe avoids intra-statement unique violations.
 
 6. **Indexed upsert target** — Conflict on `(tenant_id, email_normalized)` turns “create or update contact” into a single planner-friendly unique-index probe per row in the batch, which is how Postgres sustains high ingest rates on large tables.
 
-7. **Errors normalized into their own table** — Skip samples are inserted in batches of 1000 after ingestion, with indexes on `(import_id, row_number)`. That avoids a giant JSONB blob on `contact_imports` and keeps the hot import row narrow.
+7. **Errors normalized into their own table** — Skip samples are inserted in batches of 6000 after ingestion, with indexes on `(import_id, row_number)`. That avoids a giant JSONB blob on `contact_imports` and keeps the hot import row narrow.
 
 8. **Incremental counters** — `contact_imports` and each chunk store inspected / ingested / skipped counts updated. The UI reads one row instead of `COUNT(*)` over millions of contacts mid-import.
 
-9. **Bounded parallelism** — Four concurrent chunk steps limit write QPS to Postgres and Blob while still finishing ~1M rows in about **1m 33s** in workflow tests (see [Parallelism](#parallelism)).
+9. **Bounded parallelism** — 15 concurrent chunk steps limit write QPS to Postgres and Blob while still finishing ~1M rows in about **1m 33s** in workflow tests (see [Parallelism](#parallelism)).
 
 10. **Idempotent membership** — `ON CONFLICT DO NOTHING` on `(list_id, contact_id)` makes chunk retries safe without duplicate memberships.
 
@@ -342,9 +344,9 @@ Chunks are processed in **waves** of up to **4** concurrent chunk steps; a short
 | 1k   | 1      | ~2s                         |
 | 10k  | 1      | ~4s                         |
 | 100k | 3      | ~13s                        |
-| 1M   | 26     | ~1m 33s                     |
+| 1M   | 26     | ~50s                        |
 
-Chunks are ~4 MiB byte ranges trimmed to line boundaries. At 1M rows (~100 MB), four chunks run per wave (~7 waves) with 1s pauses between waves.
+Chunks are ~4 MiB byte ranges trimmed to line boundaries. At 1M rows (~100 MB), 15 chunks run per wave (~2 waves) with 1s pauses between waves.
 
 ### Completion
 
