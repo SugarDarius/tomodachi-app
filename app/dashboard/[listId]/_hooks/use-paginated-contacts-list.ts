@@ -126,7 +126,7 @@ export function usePaginatedContactsList({
   useEffect(() => {
     if (page.canGoNext) {
       preloadSafeSWR(
-        `/api/contacts/get/${listId}?pageIndex=${pageIndex + 1}&pageSize=${DEFAULT_PAGE_SIZE}&searchQuery=${searchQuery}`,
+        `/api/contacts/get/${listId}?pageIndex=${pageIndex + 1}&pageSize=${DEFAULT_PAGE_SIZE}${searchQuery ? `&searchQuery=${searchQuery}` : ''}`,
         paginatedContactsListDecoder
       )
     }
