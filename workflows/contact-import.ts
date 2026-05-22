@@ -635,7 +635,17 @@ async function ingestChunk({
     batch = []
   }
 
+  let index = -1
   for await (const record of pipe as AsyncIterable<Record<string, string>>) {
+    index += 1
+    /**
+     * For the first chunk we skip the first row as it the column headers,
+     * so we don't care/need to map/insert it.
+     */
+    if (isFirstChunk && index === 0) {
+      continue
+    }
+
     numberOfInspectedRows += 1
     const globalRowNumber = chunk.firstRowNumber + numberOfInspectedRows - 1
 
