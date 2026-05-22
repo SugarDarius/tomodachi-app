@@ -383,7 +383,13 @@ async function prepareImport({
     .where(eq(contactImports.id, importId))
 }
 
-type BatchRow = MappedContactImportRow & {
+/**
+ * Internal type do define a row to upsert in the `contacts` table.
+ * Will contain the mapped contact import row and the row number.
+ *
+ * `rowNumber` is the position of the row in the CSV file.
+ */
+type BatchUpsertRow = MappedContactImportRow & {
   rowNumber: number
 }
 
@@ -415,13 +421,13 @@ async function flushBatch({
   importId: string
   tenantId: string
   listId: string
-  rows: BatchRow[]
+  rows: BatchUpsertRow[]
 }): Promise<{ committed: number }> {
   if (rows.length === 0) {
     return { committed: 0 }
   }
 
-  const dedupedByNormalizedEmail = new Map<string, BatchRow>()
+  const dedupedByNormalizedEmail = new Map<string, BatchUpsertRow>()
   for (const row of rows) {
     dedupedByNormalizedEmail.set(row.email.trim().toLowerCase(), row)
   }
@@ -609,7 +615,7 @@ async function ingestChunk({
 
   const pipe = Readable.from(buffer).pipe(parser)
 
-  let batch: BatchRow[] = []
+  let batch: BatchUpsertRow[] = []
 
   let numberOfInspectedRows = 0
   let numberOfIngestedRows = 0
