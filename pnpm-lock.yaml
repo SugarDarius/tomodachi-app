@@ -26,12 +26,6 @@ importers:
       '@tanstack/react-table':
         specifier: ^8.21.3
         version: 8.21.3(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
-      '@upstash/realtime':
-        specifier: ^1.0.3
-        version: 1.0.3(@upstash/redis@1.38.0)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)(zod@4.4.3)
-      '@upstash/redis':
-        specifier: ^1.38.0
-        version: 1.38.0
       '@vercel/blob':
         specifier: ^2.3.3
         version: 2.3.3
@@ -68,9 +62,6 @@ importers:
       nuqs:
         specifier: ^2.8.9
         version: 2.8.9(next@16.2.5(@babel/core@7.29.0)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(react@19.2.6)
-      papaparse:
-        specifier: ^5.5.3
-        version: 5.5.3
       radix-ui:
         specifier: ^1.4.3
         version: 1.4.3(@types/react-dom@19.2.3(@types/react@19.2.14))(@types/react@19.2.14)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
@@ -120,9 +111,6 @@ importers:
       '@types/node':
         specifier: ^25.6.0
         version: 25.6.2
-      '@types/papaparse':
-        specifier: ^5.5.2
-        version: 5.5.2
       '@types/react':
         specifier: ^19
         version: 19.2.14
@@ -3252,9 +3240,6 @@ packages:
   '@types/node@25.6.2':
     resolution: {integrity: sha512-sokuT28dxf9JT5Kady1fsXOvI4HVpjZa95NKT5y9PNTIrs2AsobR4GFAA90ZG8M+nxVRLysCXsVj6eGC7Vbrlw==}
 
-  '@types/papaparse@5.5.2':
-    resolution: {integrity: sha512-gFnFp/JMzLHCwRf7tQHrNnfhN4eYBVYYI897CGX4MY1tzY9l2aLkVyx2IlKZ/SAqDbB3I1AOZW5gTMGGsqWliA==}
-
   '@types/react-dom@19.2.3':
     resolution: {integrity: sha512-jp2L/eY6fn+KgVVQAOqYItbF0VY/YApe5Mz2F0aykSO8gx31bYCZyvSeYxCHKvzHG5eZjc+zyaS5BrBWya2+kQ==}
     peerDependencies:
@@ -3452,19 +3437,6 @@ packages:
     resolution: {integrity: sha512-lrW200hZdbfRtztbygyaq/6jP6AKE8qQN2KvPcJ+x7wiD038YtnYtZ82IMNJ69GJibV7bwL3y9FgK+5w/pYt6g==}
     cpu: [x64]
     os: [win32]
-
-  '@upstash/realtime@1.0.3':
-    resolution: {integrity: sha512-cF5O0GqTW+yfb1PUzAQTvC0LZccLg8kgFHMc4MxTpQxSV5SKSHr3jl5xogLd772CCO0of9awZdWnbtyH2FHhQg==}
-    peerDependencies:
-      '@upstash/redis': '>=1.35.4'
-      react: '>=16.8.0'
-      react-dom: '>=16.8.0'
-      zod: ^3.25.0 || ^4.0.0
-    peerDependenciesMeta:
-      react:
-        optional: true
-      react-dom:
-        optional: true
 
   '@upstash/redis@1.38.0':
     resolution: {integrity: sha512-wu+dZBptlLy0+MCUEoHmzrY/TnmgDey3+c7EbIGwrLqAvkP8yi5MWZHYGIFtAygmL4Bkz2TdFu+eU0vFPncIcg==}
@@ -6206,9 +6178,6 @@ packages:
   p-timeout@6.1.4:
     resolution: {integrity: sha512-MyIV3ZA/PmyBN/ud8vV9XzwTrNtR4jFrObymZYnZqMmW0zA8Z17vnT0rBgFE/TlohB+YCHqXMgZzb3Csp49vqg==}
     engines: {node: '>=14.16'}
-
-  papaparse@5.5.3:
-    resolution: {integrity: sha512-5QvjGxYVjxO59MGU2lHVYpRWBBtKHnlIAcSe1uNFCkkptUh63NFRj0FJQm7nR67puEruUci/ZkjmEFrjCAyP4A==}
 
   parent-module@1.0.1:
     resolution: {integrity: sha512-GQ2EWRpQV8/o+Aw8YqtfZZPfNRWZYkbidE9k5rpl/hC3vtHHBfGm2Ifi6qWV+coDGkrUKZAxE3Lot5kcsRlh+g==}
@@ -10702,10 +10671,6 @@ snapshots:
     dependencies:
       undici-types: 7.19.2
 
-  '@types/papaparse@5.5.2':
-    dependencies:
-      '@types/node': 25.6.2
-
   '@types/react-dom@19.2.3(@types/react@19.2.14)':
     dependencies:
       '@types/react': 19.2.14
@@ -10888,17 +10853,10 @@ snapshots:
   '@unrs/resolver-binding-win32-x64-msvc@1.11.1':
     optional: true
 
-  '@upstash/realtime@1.0.3(@upstash/redis@1.38.0)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)(zod@4.4.3)':
-    dependencies:
-      '@upstash/redis': 1.38.0
-      zod: 4.4.3
-    optionalDependencies:
-      react: 19.2.6
-      react-dom: 19.2.6(react@19.2.6)
-
   '@upstash/redis@1.38.0':
     dependencies:
       uncrypto: 0.1.3
+    optional: true
 
   '@vercel/blob@2.3.3':
     dependencies:
@@ -14014,8 +13972,6 @@ snapshots:
 
   p-timeout@6.1.4: {}
 
-  papaparse@5.5.3: {}
-
   parent-module@1.0.1:
     dependencies:
       callsites: 3.1.0
@@ -15210,7 +15166,8 @@ snapshots:
       buffer: 5.7.1
       through: 2.3.8
 
-  uncrypto@0.1.3: {}
+  uncrypto@0.1.3:
+    optional: true
 
   unctx@2.5.0:
     dependencies:
