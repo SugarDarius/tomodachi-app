@@ -10,6 +10,7 @@ import {
   isNull,
   and,
   type SQL,
+  asc,
 } from 'drizzle-orm'
 
 import { db } from '~/lib/db'
@@ -97,8 +98,9 @@ export async function getContactsListMembersPaginated({
       .from(contactsListMembers)
       .innerJoin(contacts, eq(contactsListMembers.contactId, contacts.id))
       .where(whereClause)
-      // 👇🏻 Pagination tie breaker to ensure consistent pagination
       .orderBy(
+        asc(contacts.rowNumber),
+        // 👇🏻 Pagination tie breaker to ensure consistent pagination
         desc(contactsListMembers.addedAt),
         desc(contactsListMembers.contactId)
       )

@@ -383,6 +383,10 @@ async function prepareImport({
     .where(eq(contactImports.id, importId))
 }
 
+type BatchRow = MappedContactImportRow & {
+  rowNumber: number
+}
+
 /**
  * Neon HTTP driver has **no interactive transactions**. Each Drizzle call is one round-trip;
  * PostgreSQL still executes each multi-row `INSERT` as a single atomic statement.
@@ -411,13 +415,13 @@ async function flushBatch({
   importId: string
   tenantId: string
   listId: string
-  rows: MappedContactImportRow[]
+  rows: BatchRow[]
 }): Promise<{ committed: number }> {
   if (rows.length === 0) {
     return { committed: 0 }
   }
 
-  const dedupedByNormalizedEmail = new Map<string, MappedContactImportRow>()
+  const dedupedByNormalizedEmail = new Map<string, BatchRow>()
   for (const row of rows) {
     dedupedByNormalizedEmail.set(row.email.trim().toLowerCase(), row)
   }
@@ -434,6 +438,7 @@ async function flushBatch({
           firstName: r.firstName,
           lastName: r.lastName,
           varyingFields: r.varyingFields,
+          rowNumber: r.rowNumber,
           completedAt: sql`now()`,
         }))
       )
@@ -443,6 +448,7 @@ async function flushBatch({
           firstName: sql`excluded.first_name`,
           lastName: sql`excluded.last_name`,
           varyingFields: sql`excluded.varying_fields`,
+          rowNumber: sql`excluded.row_number`,
           updatedAt: sql`now()`,
         },
       })
@@ -603,7 +609,7 @@ async function ingestChunk({
 
   const pipe = Readable.from(buffer).pipe(parser)
 
-  let batch: MappedContactImportRow[] = []
+  let batch: BatchRow[] = []
 
   let numberOfInspectedRows = 0
   let numberOfIngestedRows = 0
@@ -647,7 +653,7 @@ async function ingestChunk({
       continue
     }
 
-    batch.push(mappedRow)
+    batch.push({ ...mappedRow, rowNumber: globalRowNumber })
     if (batch.length >= BATCH_UPSERT_SIZE) {
       await $flushBatch()
     }

@@ -415,6 +415,12 @@ export const contacts = pgTable(
       .$type<Record<string, string>>()
       .notNull()
       .default({}),
+
+    /**
+     * Row number
+     * Used to track the row number of the contact in the CSV file.
+     */
+    rowNumber: integer('row_number').notNull().default(0),
     /**
      * The timestamp when the contact was updated.
      */

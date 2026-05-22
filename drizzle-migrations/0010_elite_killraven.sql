@@ -1,0 +1,1 @@
+ALTER TABLE "contacts" ADD COLUMN "row_number" integer DEFAULT 0 NOT NULL;

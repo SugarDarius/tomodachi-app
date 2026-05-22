@@ -30,6 +30,7 @@ const paginatedContactsListDecoder = object({
       firstName: string,
       lastName: string,
       varyingFields: record(string, string),
+      rowNumber: number,
       createdAt: flexDate,
       updatedAt: flexDate,
       deletedAt: nullable(flexDate),
@@ -88,7 +89,7 @@ export function usePaginatedContactsList({
     error,
     mutate,
   } = useSafeSWR<ContactsListMembersPage>(
-    `/api/contacts/get/${listId}?pageIndex=${pageIndex}&pageSize=${DEFAULT_PAGE_SIZE}&searchQuery=${searchQuery}`,
+    `/api/contacts/get/${listId}?pageIndex=${pageIndex}&pageSize=${DEFAULT_PAGE_SIZE}${searchQuery ? `&searchQuery=${searchQuery}` : ''}`,
     paginatedContactsListDecoder,
     {
       initialData: initialPage,

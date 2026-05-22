@@ -53,6 +53,12 @@ export function useDynamicColumns({ columnMap }: { columnMap: ColumnMapping }) {
         header: () => <TableHeaderCellAction />,
         cell: ({ row }) => <TableRowCellAction id={row.original.id} />,
       },
+      {
+        id: 'rowNumber',
+        accessorKey: 'rowNumber',
+        header: ({ column }) => <TableColumnHeader column={column} title='#' />,
+        cell: ({ row }) => row.original.rowNumber,
+      },
       ...storedColumns.map(
         (meta) =>
           ({
